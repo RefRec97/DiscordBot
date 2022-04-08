@@ -60,6 +60,7 @@ class Stats(commands.Cog):
         data = self._historyData[username][-7:]
 
         returnMsg = f"```Spieler {username}\n"
+        returnMsg +="{0:11} {1:10} {2:10} {3:10} {4:10}\n".format("Timestamp", "Platz", "Gesamt", "Flotte", "Gebäude")
         for entry in data:
             returnMsg += "{0:11} {1:10} {2:10} {3:10} {4:10}\n".format(entry["timestamp"], str(entry["platz"]),
                                                                        entry["gesamt"] ,entry["flotte"], entry["gebäude"])
