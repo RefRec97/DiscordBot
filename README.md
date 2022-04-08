@@ -1,2 +1,2 @@
 # PDB
-Pr0grame Discord Bot
+Pr0game Discord Bot
