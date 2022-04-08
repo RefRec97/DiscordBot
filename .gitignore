@@ -1,5 +1,5 @@
 #Scraped Files & Authorisation
-files/*
+files/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
