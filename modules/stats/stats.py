@@ -1,3 +1,4 @@
+from this import d
 from discord.ext import commands
 
 from utils.fileHandler import FileHandler
@@ -16,7 +17,13 @@ class Stats(commands.Cog):
     async def stats(self, ctx: commands.context, username: str):
         """Zeigt die Werte des Spielers <username> an"""
         username = username.lower()
-        await ctx.send(self._getOutputString(self._userData[username]))
+        await ctx.send(self._getStatsString(username))
+
+    @commands.command()
+    async def history(self, ctx: commands.context, username: str):
+        """Zeigt die Historie des Spielers <username> an"""
+        username = username.lower()
+        await ctx.send(self._getHistoryString(username))
 
     def updateData(self):
         self._updateUserData()
@@ -45,22 +52,44 @@ class Stats(commands.Cog):
         if(myData.valid):
             self._userData = myData.data
 
-    def _getOutputString(self,userdata):
+    def _getHistoryString(self, username):
+        if not username in self._historyData:
+            return "Nutzer nicht gefunden"
+        
+        #only use last 7 entrys
+        data = self._historyData[username][-7:]
+
+        returnMsg = f"```Spieler {username}\n"
+        returnMsg +="{0:11} {1:10} {2:10} {3:10} {4:10}\n".format("Timestamp", "Platz", "Gesamt", "Flotte", "Gebäude")
+        for entry in data:
+            returnMsg += "{0:11} {1:10} {2:10} {3:10} {4:10}\n".format(entry["timestamp"], str(entry["platz"]),
+                                                                       entry["gesamt"] ,entry["flotte"], entry["gebäude"])
+        returnMsg += "{0:11} {1:10} {2:10} {3:10} {4:10}\n".format("Differenz", 
+                                                                   self._userData[username]["diff_platz"],
+                                                                   self._userData[username]["diff_gesamt"],
+                                                                   self._userData[username]["diff_flotte"],
+                                                                   self._userData[username]["diff_gebäude"])
+        return returnMsg + "```"
+
+    def _getStatsString(self, username):
+        if not username in self._userData:
+            return "Nutzer nicht gefunden"
+        userData = self._userData[username]
+
         returnMsg = "```"
         for field in self._fields:
-            if f"diff_{field}" in userdata:
-                returnMsg += "{0:30}{1:10} ({2})\n".format(field.capitalize(),str(userdata[field]), userdata["diff_" +field])
-            elif userdata[field] == "sc0t":
-                returnMsg += "{0:30}{1:10} {2}\n".format(field.capitalize(),userdata[field], "<- Noob")
+            if f"diff_{field}" in userData:
+                returnMsg += "{0:30}{1:10} ({2})\n".format(field.capitalize(),str(userData[field]), userData["diff_" +field])
+            elif userData[field] == "sc0t":
+                returnMsg += "{0:30}{1:10} {2}\n".format(field.capitalize(),userData[field], "<- Noob")
             else:
-                returnMsg += "{0:30}{1}\n".format(field.capitalize(),userdata[field])
+                returnMsg += "{0:30}{1}\n".format(field.capitalize(),userData[field])
         
         #addPlanetData
         returnMsg += "\n{0:30}\n".format("Bekannte Planeten")
-        for planetPos in userdata["planets"]:
+        for planetPos in userData["planets"]:
             returnMsg += "[{}]\n".format(planetPos)
         
-        print(returnMsg)
         return returnMsg + "```"
 
 def setup(bot: commands.Bot):
