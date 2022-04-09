@@ -27,7 +27,7 @@ class FileHandler:
 
         if os.path.exists(currentFileName):
             logging.info("FileHandler: File Found, skipping scraping")
-            self._currentData = self._readFile(currentFileName)
+            self._currentData: MyData = self._readFile(currentFileName)
             self._lastUpdate =  date.today().strftime("%d_%m_%Y")
         else:
             self._currentData = self._scrape()
@@ -35,21 +35,26 @@ class FileHandler:
         return self._currentData
 
     def getHistoryData(self):
-        historyFileNames = self._readFile(self._historyFileNames)
+        historyFileNames: MyData = self._readFile(self._historyFileNames)
 
-        if historyFileNames.valid:
-            for file in historyFileNames.data["filenames"]:
-                day = self._readFile(self._path + file + self._fileEnding)
-                if day.valid:
-                    for userName in day.data:
-                        day.data[userName]["timestamp"] = file
+        try:
+            if historyFileNames.valid:
+                for file in historyFileNames.data["filenames"]:
+                    day = self._readFile(self._path + file + self._fileEnding)
+                    if day.valid:
+                        for userName in day.data:
+                            day.data[userName]["timestamp"] = file
 
-                        if userName in self._historyData.data:
-                            self._historyData.data[userName].append(day.data[userName])
-                        else:
-                            self._historyData.data[userName] = [day.data[userName]]
+                            if userName in self._historyData.data:
+                                self._historyData.data[userName].append(day.data[userName])
+                            else:
+                                self._historyData.data[userName] = [day.data[userName]]
+            self._historyData.valid = True
+        except:
+            self._historyData.valid = False
+            logging.error("FileHandler: Failed to read/parse History Files")
        
-        return self._historyData.data
+        return self._historyData
 
     def getLastUpdate(self):
         return self._lastUpdate
@@ -67,6 +72,7 @@ class FileHandler:
                 myData.valid = True
         except:
             myData.valid = False
+            logging.error(f"FileHandler: Failed to open file {filePath}")
         
         return myData
         
@@ -84,6 +90,7 @@ class FileHandler:
                 myData.data = self._parsePlayerCards(session, playerPosAndId)
         except:
             myData.valid = False
+            logging.error("FileHandler: Failed scrape Pr0game")
         
         if(myData.valid):
             self._saveData(myData.data)
@@ -95,8 +102,11 @@ class FileHandler:
         logging.info("FileHandler: Saving scraped Data")
         currentFileName = self._getCurrentFileName()
 
-        with open(currentFileName, 'w') as file:
-            file.write(json.dumps(data))
+        try:
+            with open(currentFileName, 'w') as file:
+                file.write(json.dumps(data))
+        except:
+            logging.error("FileHandler: Failed to save scraped Data")
 
     def _parsePlayerCards(self, session, playerPosAndId):
         data = {}
