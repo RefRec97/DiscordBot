@@ -46,6 +46,12 @@ class Stats(commands.Cog):
         self._updateUserData()
         self._updateHistoryData()
 
+    def getUserData(self, username=None):
+        if(username):
+            return self._userData[username]
+        else:
+            return self._userData
+
     def _updateHistoryData(self):
         historyData: MyData = self._fileHandler.getHistoryData()
         
