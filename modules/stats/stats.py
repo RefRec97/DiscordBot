@@ -1,4 +1,4 @@
-from this import d
+import logging
 from discord.ext import commands
 
 from utils.fileHandler import FileHandler
@@ -26,13 +26,27 @@ class Stats(commands.Cog):
         await ctx.send(self._getHistoryString(username))
 
     def updateData(self):
+        logging.info("Stats: Updating data")
         self._updateUserData()
         self._updateHistoryData()
 
     def _updateHistoryData(self):
-        self._historyData = self._fileHandler.getHistoryData()
+        historyData: MyData = self._fileHandler.getHistoryData()
+        
+        if historyData.valid:
+            self._historyData = historyData.data
+        else:
+            logging.warning("Stats: Invalid historyData to update")
+        
         self._insertDiffDataToUser()
-    
+
+    def _updateUserData(self):
+        myData: MyData = self._fileHandler.getCurrentData()
+        if(myData.valid):
+            self._userData = myData.data
+        else:
+            logging.warning("Stats: Invalid userData to update")
+
     def _insertDiffDataToUser(self):
         for user in self._historyData:
             userData = self._historyData[user][0]
@@ -46,11 +60,6 @@ class Stats(commands.Cog):
                     except:
                         if user in self._userData:
                             self._userData[user]["diff_"+ element] = "N/A"
-    
-    def _updateUserData(self):
-        myData = self._fileHandler.getCurrentData()
-        if(myData.valid):
-            self._userData = myData.data
 
     def _getHistoryString(self, username):
         if not username in self._historyData:
