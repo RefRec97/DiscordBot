@@ -25,6 +25,22 @@ class Stats(commands.Cog):
         username = username.lower()
         await ctx.send(self._getHistoryString(username))
 
+    @stats.error
+    async def stats_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Spielername fehlt!\nBsp.: !stats Sc0t')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    
+    @history.error
+    async def history_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Spielername fehlt!\nBsp.: !history Sc0t')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+
     def updateData(self):
         logging.info("Stats: Updating data")
         self._updateUserData()
