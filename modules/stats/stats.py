@@ -1,7 +1,6 @@
 import logging
 from discord.ext import commands
 
-from utils.myData import MyData
 from utils.playerData import PlayerData
 
 class Stats(commands.Cog):
@@ -46,13 +45,6 @@ class Stats(commands.Cog):
         logging.info("Stats: Updating data")
         self._userData = self._PlayerData.getUserData()
         self._historyData = self._PlayerData.getHistoryData()
-
-    def _updateUserData(self):
-        myData: MyData = self._fileHandler.getCurrentData()
-        if(myData.valid):
-            self._userData = myData.data
-        else:
-            logging.warning("Stats: Invalid userData to update")
 
     def _getHistoryString(self, username):
         if not username in self._historyData:
