@@ -1,16 +1,16 @@
 import logging
 from discord.ext import commands
 
-from utils.fileHandler import FileHandler
-from utils.myData import MyData
+from utils.playerData import PlayerData
 
 class Stats(commands.Cog):
     def __init__(self, bot: commands.bot):
-        self._bot = bot
-        self._fileHandler = FileHandler.instance()
+        self._bot: commands.bot = bot
+        self._PlayerData: PlayerData = PlayerData.instance()
         self._fields = ["platz", "username", "allianz", "heimatplanet", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
-        self._userData = None
-        self._historyData = None
+        self._userData: dict = {}
+        self._historyData: dict = {}
+        
         self.updateData()
     
     @commands.command()
@@ -43,45 +43,8 @@ class Stats(commands.Cog):
 
     def updateData(self):
         logging.info("Stats: Updating data")
-        self._updateUserData()
-        self._updateHistoryData()
-
-    def getUserData(self, username=None):
-        if(username):
-            return self._userData[username]
-        else:
-            return self._userData
-
-    def _updateHistoryData(self):
-        historyData: MyData = self._fileHandler.getHistoryData()
-        
-        if historyData.valid:
-            self._historyData = historyData.data
-        else:
-            logging.warning("Stats: Invalid historyData to update")
-        
-        self._insertDiffDataToUser()
-
-    def _updateUserData(self):
-        myData: MyData = self._fileHandler.getCurrentData()
-        if(myData.valid):
-            self._userData = myData.data
-        else:
-            logging.warning("Stats: Invalid userData to update")
-
-    def _insertDiffDataToUser(self):
-        for user in self._historyData:
-            userData = self._historyData[user][0]
-            for element in userData:
-                data = str(userData[element]).replace(".","")
-                if data.isnumeric():
-                    try:
-                        currentData = str(self._historyData[user][-1][element]).replace(".","")
-                        lastData = str(self._historyData[user][-2][element]).replace(".","")
-                        self._userData[user]["diff_"+element] = "{:+g}".format(int(currentData) - int(lastData))
-                    except:
-                        if user in self._userData:
-                            self._userData[user]["diff_"+ element] = "N/A"
+        self._userData = self._PlayerData.getUserData()
+        self._historyData = self._PlayerData.getHistoryData()
 
     def _getHistoryString(self, username):
         if not username in self._historyData:

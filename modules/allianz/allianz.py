@@ -1,16 +1,13 @@
 import logging
-from logging.config import DEFAULT_LOGGING_CONFIG_PORT
 from discord.ext import commands
-from numpy import number
 
-from utils.fileHandler import FileHandler
-from utils.myData import MyData
+from utils.playerData import PlayerData
 
 class Allianz(commands.Cog):
     def __init__(self, bot: commands.bot):
-        self._bot = bot
-        self._fileHandler = FileHandler.instance()
-        self._allianzData = {}
+        self._bot: commands.bot = bot
+        self._PlayerData: PlayerData = PlayerData.instance()
+        self._allianzData: dict = {}
         self.updateData()
     
     @commands.command()
@@ -34,7 +31,10 @@ class Allianz(commands.Cog):
 
     def updateData(self):
         logging.info("Allianz: Updating data")
-        self._setupAllianzData()
+
+        userData: dict = self._PlayerData.getUserData()
+        fullAllianzData: dict = self._getAllAllianzMember(userData)
+        self._allianzData: dict = self._getAllTopAllianzMembers(fullAllianzData)
   
     def _getAllianzString(self, allianzName):
         returnMsg = f"```Top 10 von Allianz {allianzName}\n"
@@ -58,13 +58,6 @@ class Allianz(commands.Cog):
                                                                 userData["gesamt"],
                                                                 userData["flotte"])
         return returnMsg + "```"
-
-    def _setupAllianzData(self):
-        #rework to save only usernames and not complete Data
-        userData: dict = self._bot.get_cog('Stats').getUserData()
-
-        fullAllianzData: dict = self._getAllAllianzMember(userData)
-        self._allianzData: dict = self._getAllTopAllianzMembers(fullAllianzData)
 
     def _getAllAllianzMember(self, userdata: dict):
         fullAllianzData = {}
