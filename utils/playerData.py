@@ -4,6 +4,7 @@ from utils.singleton import Singleton
 from utils.myData import MyData
 from utils.fileHandler import FileHandler
 
+
 @Singleton
 class PlayerData:
     def __init__(self):
@@ -11,27 +12,58 @@ class PlayerData:
         self._userData = {}
         self._historyData = {}
         self._planetData = {}
+        self._allianzData = {}
+        self._userNames = []
 
         self.updateData()
     
     def updateData(self):
         logging.info("PlayerData: Updating data")
-        #Order matters
+        #_updateUserData needs to be first
         self._updateUserData()
         self._updateHistoryData()
+        self._updatePlanetData()
 
-    def getUserData(self):
+    def getUserDataReference(self):
         return self._userData
+    
+    def getUserNamesReference(self):
+        return self._userNames
 
-    def getHistoryData(self):
+    def getHistoryDataReference(self):
         return self._historyData
+
+    def getAllianzDataReference(self):
+        return self._allianzData
+
+    def addPlanet(self, position, username):
+        #savePlanetData on currentClass
+        self._planetData[username].append(position)
+
+        #save planet as file
+        result = self._fileHandler.setPlanetData(self._planetData)
+        
+        return result
+
+    def delPlanet(self, position, username):
+        self._planetData[username].remove(position)
+
+        result = self._fileHandler.setPlanetData(self._planetData)
+        
+        return result
 
     def _updateUserData(self):
         myData: MyData = self._fileHandler.getCurrentData()
         if(myData.valid):
             self._userData = myData.data
+            self._setupUserNames()
+            self._setupAllianzData()
         else:
             logging.warning("PlayerData: Invalid userData to update")
+    
+    def _setupUserNames(self):
+        for user in self._userData:
+            self._userNames.append(user)
     
     def _updateHistoryData(self):
         historyData: MyData = self._fileHandler.getHistoryData()
@@ -57,3 +89,42 @@ class PlayerData:
                         #No history Data
                         if user in self._userData:
                             self._userData[user]["diff_"+ element] = "N/A"
+
+    def _updatePlanetData(self):
+        myData: MyData = self._fileHandler.getPlanetData()
+        if myData.valid:
+            self._planetData = myData.data
+        else:
+            logging.warning("PlayerData: Invalid userData to update")
+        
+        self._insertPlanetDataToUsers()
+    
+    def _insertPlanetDataToUsers(self):
+        for user in self._userData:
+            if user in self._planetData:
+                self._userData[user]["planets"] = self._planetData[user]
+    
+    def _setupAllianzData(self):
+        fullAllianzData: dict = self._getAllAllianzMember(self._userData)
+        self._allianzData: dict = self._getAllTopAllianzMembers(fullAllianzData)
+
+    def _getAllAllianzMember(self, userdata: dict):
+        fullAllianzData = {}
+        for user in userdata:
+            name: str = userdata[user]["allianz"].lower().strip()
+            if name in fullAllianzData:
+                fullAllianzData[name].append(userdata[user])
+            else:
+                fullAllianzData[name] = [userdata[user]]
+        
+        return fullAllianzData
+    
+    def _getAllTopAllianzMembers(self, fullAllianzData: dict):
+        topAllianzUsers = {}
+        for allianzName in fullAllianzData:
+            allianzUsers: list = fullAllianzData[allianzName]
+            
+            #sort users by rank and keep only top 10
+            topAllianzUsers[allianzName] = sorted(allianzUsers,key=lambda d: d['platz'])[:10]
+        
+        return topAllianzUsers

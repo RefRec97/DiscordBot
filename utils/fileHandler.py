@@ -16,11 +16,13 @@ class FileHandler:
         logging.info("FileHandler created")
         self._path = "files/"
         self._fileEnding = ".json"
-        self._currentData = MyData()
+        self._currentData = MyData({})
         self._historyData = MyData({})
+        self._planetData = MyData()
         self._sitesToParse = 10          #each site has 100 Player
         self._lastUpdate = "N/A"
         self._historyFileNames = self._path + "historyFileNames" + self._fileEnding
+        self._planetDataFile = self._path + "planetData" + self._fileEnding
 
     def getCurrentData(self):
         currentFileName = self._getCurrentFileName()
@@ -44,7 +46,6 @@ class FileHandler:
                     if day.valid:
                         for userName in day.data:
                             day.data[userName]["timestamp"] = file
-
                             if userName in self._historyData.data:
                                 self._historyData.data[userName].append(day.data[userName])
                             else:
@@ -58,7 +59,19 @@ class FileHandler:
 
     def getLastUpdate(self):
         return self._lastUpdate
+
+    def getPlanetData(self):
+        planetData: MyData = self._readFile(self._planetDataFile)
+
+        if planetData.valid:
+            self._planetData = planetData
         
+        return self._planetData
+
+    def setPlanetData(self, data: dict):
+        self._planetData = data
+        return self._writeFile(self._planetDataFile, data)
+
     def _getCurrentFileName(self):
         today = date.today()
         return self._path + today.strftime("%d_%m_%Y") + self._fileEnding
@@ -75,7 +88,17 @@ class FileHandler:
             logging.error(f"FileHandler: Failed to open file {filePath}")
         
         return myData
-        
+
+    def _writeFile(self, filePath: str, data: dict):
+        logging.info(f"FileHandler: Saving data to file {filePath}")
+        try:
+            with open(filePath, 'w') as file:
+                file.write(json.dumps(data))
+        except:
+            logging.error(f"FileHandler: Failed to save data to file: {filePath}")
+            return False
+        return True
+
     def _scrape(self):
         """ToDo: Move in seperate File"""
         logging.info("FileHandler: Start Scraping Pr0game ...")
@@ -88,25 +111,16 @@ class FileHandler:
                 self._login(session)
                 playerPosAndId = self._parseStatisticSite(session)
                 myData.data = self._parsePlayerCards(session, playerPosAndId)
+                myData.valid= True
         except:
             myData.valid = False
             logging.error("FileHandler: Failed scrape Pr0game")
         
         if(myData.valid):
-            self._saveData(myData.data)
+            self._writeFile(self._getCurrentFileName(), myData.data)
             self._lastUpdate = date.today().strftime("%d_%m_%Y")
             
         return myData
-
-    def _saveData(self, data):
-        logging.info("FileHandler: Saving scraped Data")
-        currentFileName = self._getCurrentFileName()
-
-        try:
-            with open(currentFileName, 'w') as file:
-                file.write(json.dumps(data))
-        except:
-            logging.error("FileHandler: Failed to save scraped Data")
 
     def _parsePlayerCards(self, session, playerPosAndId):
         data = {}

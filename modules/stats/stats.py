@@ -10,8 +10,9 @@ class Stats(commands.Cog):
         self._fields = ["platz", "username", "allianz", "heimatplanet", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
         self._userData: dict = {}
         self._historyData: dict = {}
+
         
-        self.updateData()
+        self.setup()
     
     @commands.command()
     async def stats(self, ctx: commands.context, username: str):
@@ -41,10 +42,10 @@ class Stats(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
-    def updateData(self):
-        logging.info("Stats: Updating data")
-        self._userData = self._PlayerData.getUserData()
-        self._historyData = self._PlayerData.getHistoryData()
+    def setup(self):
+        logging.info("Stats: Get Data references")
+        self._userData = self._PlayerData.getUserDataReference()
+        self._historyData = self._PlayerData.getHistoryDataReference()
 
     def _getHistoryString(self, username):
         if not username in self._historyData:
