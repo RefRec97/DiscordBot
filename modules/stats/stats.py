@@ -1,5 +1,6 @@
 import logging
 from discord.ext import commands
+from quickchart import QuickChart
 
 from utils.playerData import PlayerData
 
@@ -26,6 +27,22 @@ class Stats(commands.Cog):
         username = username.lower()
         await ctx.send(self._getHistoryString(username))
 
+    @commands.command(usage="<username> [size]",
+                      brief="Zeigt eine Diagramm an",
+                      help="Zeigt ein Diagramm für den User <username> an. Die größe wird über den optionalen " +
+                           "parameter [size] angepasst. Mögliche größen sind: S, M, L, XL (default: M)")
+    async def chart(self, ctx: commands.context, username: str, size: str = None):
+        username = username.lower()
+        if isinstance(size,str):
+            size = size.lower()
+        
+        if not username in self._historyData:
+            return "Nutzer nicht gefunden"
+
+        chartData = self._setupChartData(self._historyData[username])
+       
+        await ctx.send(self._getChartURL(chartData, size))
+
     @stats.error
     async def stats_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -41,11 +58,123 @@ class Stats(commands.Cog):
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    
+    @chart.error
+    async def chart_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Spielername fehlt!\nBsp.: !chart Sc0t')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
     def setup(self):
         logging.info("Stats: Get Data references")
         self._userData = self._PlayerData.getUserDataReference()
         self._historyData = self._PlayerData.getHistoryDataReference()
+
+    def _getChartURL(self, chartData: dict, size: str):
+        qc = QuickChart()
+
+        match size:
+            case 's':
+                qc.width = 500
+                qc.height = 300
+            case 'm':
+                qc.width = 720
+                qc.height = 480
+            case 'l':
+                qc.width = 1280
+                qc.height = 720
+            case 'xl':
+                qc.width = 1980
+                qc.height = 1080
+            case _: #m
+                qc.width = 720
+                qc.height = 480
+           
+        qc.device_pixel_ratio = 2.0
+        qc.config = {
+            "type": "line",
+            "data": {
+                "labels": chartData["labels"],
+                "datasets": [{
+                    "yAxisID": "rankAxis",
+                    "label": "Platz",
+                    "data": chartData["platz"],
+                    "fill": False,
+                },{
+                    "yAxisID": "pointAxis",
+                    "label": "Gesamtpunkte",
+                    "data": chartData["gesamt"],
+                    "fill": False,
+                },{
+                    "yAxisID": "pointAxis",
+                    "label": "Gebäude",
+                    "data": chartData["gebäude"],
+                    "fill": False,
+                },{
+                    "yAxisID": "pointAxis",
+                    "label": "Forschung",
+                    "data": chartData["forschung"],
+                    "fill": False,
+                },{
+                    "yAxisID": "pointAxis",
+                    "label": "Flotte",
+                    "data": chartData["flotte"],
+                    "fill": False,
+                },{
+                    "yAxisID": "pointAxis",
+                    "label": "Defensive",
+                    "data": chartData["defensive"],
+                    "fill": False,
+                }]
+            },
+            "options": {
+                "scales": {
+                "xAxes": [{
+                    "stacked": True
+                }],
+                "yAxes": [{
+                    "id": "rankAxis",
+                    "display": True,
+                    "position": "left",
+                    "stacked": True,
+                    },{
+                    "id": "pointAxis",
+                    "display": True,
+                    "position": "right",
+                    "gridLines": {
+                        "drawOnChartArea": False
+                    },
+                    "ticks": {
+                        "beginAtZero": True}
+                    }]
+                }
+            }
+        }
+        return qc.get_short_url()
+
+    def _setupChartData(self, historyData: dict):
+        chartData= {
+            "labels": [],
+            "gesamt": [],
+            "platz": [],
+            "flotte": [],
+            "gebäude": [],
+            "defensive": [],
+            "forschung": []
+        }
+
+        for day in historyData:
+            chartData["labels"].append(day["timestamp"].rsplit("_",1)[0].replace("_","."))
+            chartData["gesamt"].append(day["gesamt"].replace(".",""))
+            chartData["platz"].append(day["platz"])
+            chartData["flotte"].append(day["flotte"].replace(".",""))
+            chartData["gebäude"].append(day["gebäude"].replace(".",""))
+            chartData["defensive"].append(day["defensive"].replace(".",""))
+            chartData["forschung"].append(day["forschung"].replace(".",""))
+
+        return chartData
 
     def _getHistoryString(self, username):
         if not username in self._historyData:
