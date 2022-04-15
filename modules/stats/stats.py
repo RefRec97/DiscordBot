@@ -183,16 +183,16 @@ class Stats(commands.Cog):
         #only use last 7 entrys
         data = self._historyData[username][-7:]
 
-        returnMsg = f"```Spieler {username}\n"
-        returnMsg +="{0:11} {1:10} {2:10} {3:10} {4:10}\n".format("Timestamp", "Platz", "Gesamt", "Flotte", "Gebäude")
+        returnMsg = f"```Spieler {username}\n\n"
+        returnMsg +="{0:7} {1:5} {2:10} {3:10} {4:10}\n".format("Datum", "P.", "Gesamt", "Flotte", "Gebäude")
         for entry in data:
-            returnMsg += "{0:11} {1:10} {2:10} {3:10} {4:10}\n".format(entry["timestamp"], str(entry["platz"]),
-                                                                       entry["gesamt"] ,entry["flotte"], entry["gebäude"])
-        returnMsg += "{0:11} {1:10} {2:10} {3:10} {4:10}\n".format("Differenz", 
-                                                                   self._userData[username]["diff_platz"],
-                                                                   self._userData[username]["diff_gesamt"],
-                                                                   self._userData[username]["diff_flotte"],
-                                                                   self._userData[username]["diff_gebäude"])
+            returnMsg += "{0:7} {1:5} {2:10} {3:10} {4:10}\n".format(entry["timestamp"].rsplit("_",1)[0].replace("_","."), str(entry["platz"]),
+                                                                     entry["gesamt"] ,entry["flotte"], entry["gebäude"])
+        returnMsg += "{0:7} {1:5} {2:10} {3:10} {4:10}\n".format("Diff.", 
+                                                                 self._userData[username]["diff_platz"],
+                                                                 self._userData[username]["diff_gesamt"],
+                                                                 self._userData[username]["diff_flotte"],
+                                                                 self._userData[username]["diff_gebäude"])
         return returnMsg + "```"
 
     def _getStatsString(self, username):
