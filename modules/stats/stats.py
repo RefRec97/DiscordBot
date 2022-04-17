@@ -3,6 +3,7 @@ from discord.ext import commands
 from quickchart import QuickChart
 
 from utils.playerData import PlayerData
+from utils.auth import AuthHandler
 
 class Stats(commands.Cog):
     def __init__(self, bot: commands.bot):
@@ -15,18 +16,21 @@ class Stats(commands.Cog):
         
         self.setup()
     
+    @commands.check(AuthHandler.instance().check)
     @commands.command()
     async def stats(self, ctx: commands.context, username: str):
         """Zeigt die Werte des Spielers <username> an"""
         username = username.lower()
         await ctx.send(self._getStatsString(username))
 
+    @commands.check(AuthHandler.instance().check)
     @commands.command()
     async def history(self, ctx: commands.context, username: str):
         """Zeigt die Historie des Spielers <username> an"""
         username = username.lower()
         await ctx.send(self._getHistoryString(username))
 
+    @commands.check(AuthHandler.instance().check)
     @commands.command(usage="<username> [size]",
                       brief="Zeigt eine Diagramm an",
                       help="Zeigt ein Diagramm für den User <username> an. Die größe wird über den optionalen " +
@@ -47,6 +51,8 @@ class Stats(commands.Cog):
     async def stats_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Spielername fehlt!\nBsp.: !stats Sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
@@ -55,6 +61,8 @@ class Stats(commands.Cog):
     async def history_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Spielername fehlt!\nBsp.: !history Sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
@@ -63,6 +71,8 @@ class Stats(commands.Cog):
     async def chart_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Spielername fehlt!\nBsp.: !chart Sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')

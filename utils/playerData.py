@@ -38,17 +38,21 @@ class PlayerData:
 
     def addPlanet(self, position, username):
         #savePlanetData on currentClass
-        self._planetData[username].append(position)
+        if not position in self._planetData[username]:
+            self._planetData[username].append(position)
 
-        #save planet as file
-        result = self._fileHandler.setPlanetData(self._planetData)
+            result = self._fileHandler.setPlanetData(self._planetData)
+        else:
+            result = False
         
         return result
 
     def delPlanet(self, position, username):
-        self._planetData[username].remove(position)
-
-        result = self._fileHandler.setPlanetData(self._planetData)
+        if position in self._planetData[username]:
+            self._planetData[username].remove(position)
+            result = self._fileHandler.setPlanetData(self._planetData)
+        else:
+            result = False
         
         return result
 

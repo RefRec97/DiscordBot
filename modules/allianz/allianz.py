@@ -2,6 +2,7 @@ import logging
 from discord.ext import commands
 
 from utils.playerData import PlayerData
+from utils.auth import AuthHandler
 
 class Allianz(commands.Cog):
     def __init__(self, bot: commands.bot):
@@ -11,6 +12,7 @@ class Allianz(commands.Cog):
 
         self.setup()
     
+    @commands.check(AuthHandler.instance().check)
     @commands.command()
     async def allianz(self, ctx: commands.context, *,allianzName):
         """Zeigt die Top 10 Spieler der Allianz <allianzname> an"""
@@ -26,6 +28,8 @@ class Allianz(commands.Cog):
     async def allianz_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Allianzname fehlt!\nBsp.: !allianz Allianz mit Poll')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')

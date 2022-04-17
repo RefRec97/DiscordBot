@@ -2,6 +2,7 @@ from discord.ext import commands
 from utils.fileHandler import FileHandler
 import re
 import logging
+from utils.auth import AuthHandler
 
 class Utils(commands.Cog):
     def __init__(self, bot: commands.bot):
@@ -9,6 +10,7 @@ class Utils(commands.Cog):
         self.FileHandler = FileHandler.instance()
         self.lastUpdate = "N/A"
     
+    @commands.check(AuthHandler.instance().check)
     @commands.command(usage="<g>:<s>",
                       brief="Erzeugt ein Link auf die Position",
                       help="Erzeugt ein Link der die Position <g>:<s> in der Galaxyansicht führt")
@@ -28,6 +30,8 @@ class Utils(commands.Cog):
     async def link_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlendes Argument!\nBsp.: !link 1:1')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')

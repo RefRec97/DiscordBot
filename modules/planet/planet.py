@@ -3,6 +3,7 @@ import re
 from discord.ext import commands
 
 from utils.playerData import PlayerData
+from utils.auth import AuthHandler
 
 class Planet(commands.Cog):
     def __init__(self, bot: commands.bot):
@@ -11,10 +12,11 @@ class Planet(commands.Cog):
         self._userNames: list = []
 
         self.setup()
-    
+
     @commands.command(usage="<g>:<s>:<p> <username>",
                       brief="Speichert einen neuen Planeten",
                       help="Speichert den Planet an position <g>:<s>:<p> zu dem spieler <username> ab")
+    @commands.check(AuthHandler.instance().check)
     async def planet(self, ctx: commands.context, position: str, username: str):
         position = position.lower()
         username = username.lower()
@@ -37,6 +39,7 @@ class Planet(commands.Cog):
 
         await ctx.send(returnMsg)
 
+    @commands.check(AuthHandler.instance().check)
     @commands.command(usage="<g>:<s>:<p> <username>",
                       brief="Löscht einen Planeten",
                       help="Löscht den Planet an position <g>:<s>:<p> von dem spieler <username>")
@@ -65,6 +68,8 @@ class Planet(commands.Cog):
     async def planet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !planet 1:1:1 sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
@@ -73,6 +78,8 @@ class Planet(commands.Cog):
     async def boom_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !boom 1:1:1 sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
