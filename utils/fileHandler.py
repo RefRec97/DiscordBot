@@ -41,21 +41,28 @@ class FileHandler:
     def getHistoryData(self):
         historyFileNames: MyData = self._readFile(self._historyFileNames)
 
-        try:
-            if historyFileNames.valid:
-                for file in historyFileNames.data["filenames"]:
-                    day = self._readFile(self._path + file + self._fileEnding)
-                    if day.valid:
-                        for userName in day.data:
-                            day.data[userName]["timestamp"] = file
-                            if userName in self._historyData.data:
-                                self._historyData.data[userName].append(day.data[userName])
-                            else:
-                                self._historyData.data[userName] = [day.data[userName]]
-            self._historyData.valid = True
-        except:
-            self._historyData.valid = False
-            logging.error("FileHandler: Failed to read/parse History Files")
+        #try:
+        if historyFileNames.valid:
+            self._historyData.data = {}
+            for file in historyFileNames.data["filenames"]:
+                day = self._readFile(self._path + file + self._fileEnding)
+                if day.valid:
+                    for userName in day.data:
+                        day.data[userName]["timestamp"] = file
+                        if userName in self._historyData.data:
+                            self._historyData.data[userName].append(day.data[userName])
+                        else:
+                            self._historyData.data[userName] = [day.data[userName]]
+        self._historyData.valid = True
+        print(1)
+        print(historyFileNames.data)
+        historyFileNames.data["filenames"].append(date.today().strftime("%d_%m_%Y"))
+        print(1)
+        self._writeFile(self._historyFileNames, historyFileNames.data)
+        print(2)
+        #except:
+        #    self._historyData.valid = False
+        #    logging.error("FileHandler: Failed to read/parse History Files")
        
         return self._historyData
 
