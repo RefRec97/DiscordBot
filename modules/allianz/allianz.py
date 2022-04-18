@@ -68,6 +68,10 @@ class Allianz(commands.Cog):
 
     def setup(self):
         logging.info("Allianz: Get Data references")
+        self._allianzData = self._PlayerData.getAllianzDataReference(self.updateCallback)
+
+    def updateCallback(self):
+        logging.info("Allianz: Updated Data references")
         self._allianzData = self._PlayerData.getAllianzDataReference()
 
     def _getAllianzPosString(self, allianzName, galaxy):

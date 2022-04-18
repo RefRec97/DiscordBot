@@ -86,6 +86,10 @@ class Planet(commands.Cog):
 
     def setup(self):
         logging.info("Planet: Get Data references")
+        self._userNames = self._PlayerData.getUserNamesReference(self.updateCallback)
+
+    def updateCallback(self):
+        logging.info("Planet: Updated Data references")
         self._userNames = self._PlayerData.getUserNamesReference()
 
     def _addPlanet(self, position, user):

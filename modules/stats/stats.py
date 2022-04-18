@@ -79,7 +79,15 @@ class Stats(commands.Cog):
 
     def setup(self):
         logging.info("Stats: Get Data references")
+        self._userData = self._PlayerData.getUserDataReference(self.updateUserDataCallback)
+        self._historyData = self._PlayerData.getHistoryDataReference(self.updateHistoryDataCallback)
+
+    def updateUserDataCallback(self):
+        logging.info("Stats: Update UserData references")
         self._userData = self._PlayerData.getUserDataReference()
+    
+    def updateHistoryDataCallback(self):
+        logging.info("Stats: Update HistoryData references")
         self._historyData = self._PlayerData.getHistoryDataReference()
 
     def _getChartURL(self, chartData: dict, size: str):

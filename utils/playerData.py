@@ -15,6 +15,7 @@ class PlayerData:
         self._planetData = {}
         self._allianzData = {}
         self._userNames = []
+        self._callbacks = []
 
         self.daily.start()
     
@@ -30,18 +31,26 @@ class PlayerData:
         self._updateHistoryData()
         self._updatePlanetData()
 
-        #send update (callbacks)
+        self._sendUpdateRequest()
 
-    def getUserDataReference(self):
+    def getUserDataReference(self, callback=None):
+        if callback and not callback in self._callbacks:
+            self._callbacks.append(callback)
         return self._userData
     
-    def getUserNamesReference(self):
+    def getUserNamesReference(self, callback=None):
+        if callback and not callback in self._callbacks:
+            self._callbacks.append(callback)
         return self._userNames
 
-    def getHistoryDataReference(self):
+    def getHistoryDataReference(self, callback=None):
+        if callback and not callback in self._callbacks:
+            self._callbacks.append(callback)
         return self._historyData
 
-    def getAllianzDataReference(self):
+    def getAllianzDataReference(self, callback=None):
+        if callback and not callback in self._callbacks:
+            self._callbacks.append(callback)
         return self._allianzData
 
     def addPlanet(self, position, username):
@@ -63,6 +72,10 @@ class PlayerData:
             result = False
         
         return result
+
+    def _sendUpdateRequest(self):
+        for callback in self._callbacks:
+            callback()
 
     def _updateUserData(self):
         myData: MyData = self._fileHandler.getCurrentData()
