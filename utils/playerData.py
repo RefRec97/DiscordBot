@@ -1,4 +1,5 @@
 import logging
+from discord.ext import tasks
 
 from utils.singleton import Singleton
 from utils.myData import MyData
@@ -15,14 +16,21 @@ class PlayerData:
         self._allianzData = {}
         self._userNames = []
 
-        self.updateData()
+        self.daily.start()
     
+    @tasks.loop(hours=24)
+    async def daily(self):
+        logging.info("PlayerData: Daily update started")
+        self.updateData()
+
     def updateData(self):
         logging.info("PlayerData: Updating data")
         #_updateUserData needs to be first
         self._updateUserData()
         self._updateHistoryData()
         self._updatePlanetData()
+
+        #send update (callbacks)
 
     def getUserDataReference(self):
         return self._userData

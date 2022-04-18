@@ -9,12 +9,19 @@ class Authentication(commands.Cog):
         self._auth = AuthHandler.instance()
     
     @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def auth(self, ctx: commands.context, username: str, field: str):
-        """Authorisiert Nutzer auf befehle"""
-        username = username.lower()
-        field = field.lower()
+    @commands.command(usage="<username> <feld/gruppe>",
+                      brief="Authorisiert Nutzer auf Befehle",
+                      help="Authorisiert Nutzer <username> auf eine Gruppe oder einzelnen Befehl <field/gruppe>")
+    async def auth(self, ctx: commands.context, *,argumente):
+        argumente = argumente.lower()
 
+        try:
+            username = argumente.rsplit(' ', 1)[0]
+            field = argumente.rsplit(' ', 1)[1]
+        except:
+            await ctx.send('Fehler bei den Argumenten!')
+            return
+        
         if self._auth.add(username, field):
             returnMsg = "Erfolgreich Authorisiert"
         else:
@@ -23,11 +30,17 @@ class Authentication(commands.Cog):
         await ctx.send(returnMsg)
 
     @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def deauth(self, ctx: commands.context, username: str, field: str):
-        """Deauthorisiert Nutzer auf befehle"""
-        username = username.lower()
-        field = field.lower()
+    @commands.command(usage="<username> <feld/gruppe>",
+                      brief="Deauthorisiert Nutzer auf Befehle",
+                      help="Deauthorisiert Nutzer <username> auf eine Gruppe oder einzelnen Befehl <field/gruppe>")
+    async def deauth(self, ctx: commands.context, *,argumente):
+        argumente = argumente.lower()
+        try:
+            username = argumente.rsplit(' ', 1)[0]
+            field = argumente.rsplit(' ', 1)[1]
+        except:
+            await ctx.send('Fehler bei den Argumenten!')
+            return
 
         if self._auth.remove(username, field):
             returnMsg = "Erfolgreich Deauthorisiert"
@@ -38,7 +51,7 @@ class Authentication(commands.Cog):
 
     @commands.check(AuthHandler.instance().check)
     @commands.command()
-    async def ban(self, ctx: commands.context, username: str):
+    async def ban(self, ctx: commands.context, *,username):
         """Deauthorisiert Nutzer auf den Bot"""
         username = username.lower()
        

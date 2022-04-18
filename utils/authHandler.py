@@ -13,6 +13,7 @@ class AuthHandler:
 
         self._normal = [
             "allianz",
+            "allianzPosition",
             "planet",
             "chart",
             "history",
@@ -23,6 +24,7 @@ class AuthHandler:
         ]
         self._poll = [
             "allianz",
+            "allianzPosition",
             "planet",
             "boom",
             "chart",
