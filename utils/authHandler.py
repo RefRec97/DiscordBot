@@ -21,6 +21,17 @@ class AuthHandler:
             "test",
             "link"
         ]
+        self._poll = [
+            "allianz",
+            "planet",
+            "boom",
+            "chart",
+            "history",
+            "stats",
+            "status",
+            "test",
+            "link"
+        ]
 
         self._setup()
     
@@ -34,6 +45,10 @@ class AuthHandler:
             for command in self._normal:
                 if not user in self._authData[command]:
                     self._authData[command].append(user)
+        elif fields == "poll":
+            for command in self._poll:
+                if not user in self._authData[command]:
+                    self._authData[command].append(user)
         elif fields in self._authData:
             if not user in self._authData[fields]:
                 self._authData[fields].append(user)
@@ -45,6 +60,10 @@ class AuthHandler:
             for command in self._normal:
                 if user in self._authData[command]:
                     self._authData[command].remove(user)
+        elif fields == "poll":
+            for command in self._poll:
+                if user in self._authData[command]:
+                    self._authData[command].append(user)
         elif fields == "all":
             for command in self._authData:
                 if user in self._authData[command]:

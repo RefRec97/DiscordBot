@@ -1,8 +1,9 @@
 import logging
 from discord.ext import commands
+from matplotlib.pyplot import text
 
 from utils.playerData import PlayerData
-from utils.auth import AuthHandler
+from utils.authHandler import AuthHandler
 
 class Allianz(commands.Cog):
     def __init__(self, bot: commands.bot):
@@ -24,6 +25,27 @@ class Allianz(commands.Cog):
 
         await ctx.send(self._getAllianzString(allianzName))
 
+    @commands.check(AuthHandler.instance().check)
+    @commands.command(usage="<allianzname> <galaxy>",
+                      brief="Zeigt alle Planeten der Allianz in einer Galaxy an",
+                      help="Zeigt alle Planeten der Allianz <allianzname> in einer Galaxy <galaxy> an.")
+    async def allianzPosition(self, ctx: commands.context, *,argumente):
+        argumente = argumente.lower()
+        
+        try:
+            allianzName = argumente.rsplit(' ', 1)[0]
+            galaxy = argumente.rsplit(' ', 1)[1]
+        except:
+            await ctx.send('Fehler bei den Argumenten!')
+            return
+        
+        if not allianzName in self._allianzData:
+            await ctx.send('Allianzname nicht gefunden')
+            return
+        
+
+        await ctx.send(self._getAllianzPosString(allianzName, galaxy))
+
     @allianz.error
     async def allianz_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -33,10 +55,56 @@ class Allianz(commands.Cog):
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    
+    @allianzPosition.error
+    async def allianzPosition_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Fehlende Argumente!\nBsp.: !allianzPosition Allianz mit Poll 3')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
     def setup(self):
         logging.info("Allianz: Get Data references")
         self._allianzData = self._PlayerData.getAllianzDataReference()
+
+    def _getAllianzPosString(self, allianzName, galaxy):
+        allianzPlanetsinGalaxy = self._getAllAllianzPlanetsInGalaxy(allianzName, galaxy)
+        sortedPlanets = self._getSortedPlanets(allianzPlanetsinGalaxy)
+        return self._getStringFromPlanets(sortedPlanets, galaxy)
+    
+    def _getStringFromPlanets(self, planets: list, gal: str):
+        if len(planets) == 0:
+            return f"``` Keine bekannte Planeten in galaxy {gal} ```"
+        
+        returnStr = "```"
+        for idx,pos in enumerate(planets):
+            if (idx%5==0):
+                returnStr += "\n"
+            returnStr += "{:10}".format(gal + ":" + str(pos[0]) + ":" + str(pos[1]))
+
+        return returnStr + "```"
+
+    def _getSortedPlanets(self, planets):
+        sortedPlanets = []
+        for planet in planets:
+            splitted = planet.split(':')
+            system = int(splitted[1])
+            pos =int(splitted[2])
+            sortedPlanets.append((system,pos))
+        #sort by system then pos
+        sortedPlanets.sort(key=lambda element: (element[0],element[1]))
+        return sortedPlanets
+
+    def _getAllAllianzPlanetsInGalaxy(self, allianzName, galaxy):
+        result = []
+        for user in self._allianzData[allianzName]:
+            for planet in user["planets"]:
+                if planet.split(":")[0] == galaxy:
+                    result.append(planet)
+        return result
 
     def _getAllianzString(self, allianzName):
         returnMsg = f"```Top 10 von Allianz {allianzName}\n"

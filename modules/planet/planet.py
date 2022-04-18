@@ -3,7 +3,7 @@ import re
 from discord.ext import commands
 
 from utils.playerData import PlayerData
-from utils.auth import AuthHandler
+from utils.authHandler import AuthHandler
 
 class Planet(commands.Cog):
     def __init__(self, bot: commands.bot):

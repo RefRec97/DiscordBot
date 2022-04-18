@@ -2,7 +2,7 @@ import logging
 
 from discord.ext import commands
 from utils.fileHandler import FileHandler
-from utils.auth import AuthHandler
+from utils.authHandler import AuthHandler
 
 class Status(commands.Cog):
     def __init__(self, bot: commands.bot):

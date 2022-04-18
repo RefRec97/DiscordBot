@@ -3,7 +3,7 @@ from discord.ext import commands
 from quickchart import QuickChart
 
 from utils.playerData import PlayerData
-from utils.auth import AuthHandler
+from utils.authHandler import AuthHandler
 
 class Stats(commands.Cog):
     def __init__(self, bot: commands.bot):

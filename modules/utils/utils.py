@@ -2,7 +2,7 @@ from discord.ext import commands
 from utils.fileHandler import FileHandler
 import re
 import logging
-from utils.auth import AuthHandler
+from utils.authHandler import AuthHandler
 
 class Utils(commands.Cog):
     def __init__(self, bot: commands.bot):

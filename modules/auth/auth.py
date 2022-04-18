@@ -1,7 +1,7 @@
 import logging
 from discord.ext import commands
 
-from utils.auth import AuthHandler
+from utils.authHandler import AuthHandler
 
 class Authentication(commands.Cog):
     def __init__(self, bot: commands.bot):
