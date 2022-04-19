@@ -1,6 +1,5 @@
 import logging
 from discord.ext import commands
-from matplotlib.pyplot import text
 
 from utils.playerData import PlayerData
 from utils.authHandler import AuthHandler

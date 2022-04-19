@@ -32,7 +32,7 @@ class Stats(commands.Cog):
 
     @commands.check(AuthHandler.instance().check)
     @commands.command(usage="<username> [size]",
-                      brief="Zeigt eine Diagramm an",
+                      brief="Zeigt ein Diagramm an",
                       help="Zeigt ein Diagramm für den User <username> an. Die größe wird über den optionalen " +
                            "parameter [size] angepasst. Mögliche größen sind: S, M, L, XL (default: M)")
     async def chart(self, ctx: commands.context, username: str, size: str = None):
@@ -93,20 +93,19 @@ class Stats(commands.Cog):
     def _getChartURL(self, chartData: dict, size: str):
         qc = QuickChart()
 
-        match size:
-            case 's':
+        if size == 's':
                 qc.width = 500
                 qc.height = 300
-            case 'm':
+        elif size == 'm':
                 qc.width = 720
                 qc.height = 480
-            case 'l':
+        elif size == 'l':
                 qc.width = 1280
                 qc.height = 720
-            case 'xl':
+        elif size == 'xl':
                 qc.width = 1980
                 qc.height = 1080
-            case _: #m
+        else: #m
                 qc.width = 720
                 qc.height = 480
            

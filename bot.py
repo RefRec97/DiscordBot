@@ -17,7 +17,7 @@ def main():
     #Initialize PlayerData
     playerData = PlayerData.instance()
 
-    for name in os.listdir("modules"):
+    for name in os.listdir(os.path.join(os.path.abspath(os.getcwd()),"modules")):
         if os.path.exists(os.path.join("modules", name)):
             client.load_extension(f"modules.{name}.{name}")
             logging.info(f"Bot: Module {name} loaded")
