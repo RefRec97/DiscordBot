@@ -47,6 +47,18 @@ class Stats(commands.Cog):
        
         await ctx.send(self._getChartURL(chartData, size))
 
+    @commands.check(AuthHandler.instance().check)
+    @commands.command(usage="<galaxy>",
+                      brief="Zeigt ein potentiell Inaktive Spieler an",
+                      help="Zeigt alle Spieler in Galaxy <galaxy> and, die potentiell Inaktiv "+
+                           "sind. (min. 3 tage kein Punktewachstum). Spieler im urlaubsmodus " +
+                           "werden leider mit augelisted")
+    async def inactive(self, ctx: commands.context, galaxy: int):
+        if galaxy <1 or galaxy>9:
+            return ctx.send("Galaxy muss zwischen 1 und 9 sein")
+
+        await ctx.send(self._getInactiveString(galaxy))
+
     @stats.error
     async def stats_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -77,6 +89,16 @@ class Stats(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
+    @inactive.error
+    async def inactive_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Galaxy fehlt!\nBsp.: !inactive 1')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+
     def setup(self):
         logging.info("Stats: Get Data references")
         self._userData = self._PlayerData.getUserDataReference(self.updateUserDataCallback)
@@ -89,6 +111,63 @@ class Stats(commands.Cog):
     def updateHistoryDataCallback(self):
         logging.info("Stats: Update HistoryData references")
         self._historyData = self._PlayerData.getHistoryDataReference()
+
+    def _getInactiveString(self, galaxy: int):
+        inactivePlayers = self._getLoosingPointsPlayer(galaxy)
+        sortedInactivePlayerPlanets = self._getFilteredAndSortedInactivePlayerPlanets(inactivePlayers, galaxy)
+
+        resultStr = "```"
+        for user,systems in sortedInactivePlayerPlanets:
+            resultStr += "{:<20}".format(user)
+            for system in systems:
+                resultStr += "{:<4}".format(system)
+            resultStr += "\n"
+        return resultStr + "```"
+
+    def _getFilteredAndSortedInactivePlayerPlanets(self, inactivePlayers: dict, galaxy):
+        filteredPlayerPlanets: dict = {}
+
+        #filter inactive players
+        for user in inactivePlayers:
+            if(inactivePlayers[user] >=3): #3 = threshold for amount of datapoints of loosing points
+                filteredPlayerPlanets[user] = []
+                for planet in self._userData[user]["planets"]:
+                    planetGalaxy = int(planet.split(":")[0])
+                    planetSystem = int(planet.split(":")[1])
+                    if(galaxy == planetGalaxy and not planetSystem in filteredPlayerPlanets[user]):
+                        filteredPlayerPlanets[user].append(planetSystem)
+
+        #sort
+        sortedPlayerPlanets = []
+        for user in filteredPlayerPlanets:
+            sortedPlayerPlanets.append((user,filteredPlayerPlanets[user]))
+        sortedPlayerPlanets.sort(key=lambda x: x[1][0])
+        return sortedPlayerPlanets
+
+    def _getLoosingPointsPlayer(self, galaxy: int):
+        inactiveData: dict = {}
+        for user in self._historyData:
+            historyData = self._historyData[user]
+            last = historyData[0]
+            for current in historyData[1:]:
+                lastPoints = int(last["gesamt"].replace(".",""))
+                currentPoints = int(current["gesamt"].replace(".",""))
+                cUsername = current["username"]
+
+                if lastPoints >= currentPoints:
+                    if cUsername in self._userData:
+                        for planet in self._userData[cUsername]["planets"]:
+                            if int(planet.split(":")[0]) == galaxy:
+                                if cUsername in inactiveData:
+                                    inactiveData[cUsername] += 1
+                                    break
+                                else:
+                                    inactiveData[cUsername] = 1
+                                    break
+                else:
+                    inactiveData.pop(user,None)
+                last = current
+        return inactiveData
 
     def _getChartURL(self, chartData: dict, size: str):
         qc = QuickChart()
