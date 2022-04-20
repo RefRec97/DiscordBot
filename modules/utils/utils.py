@@ -1,7 +1,10 @@
 from discord.ext import commands
-from utils.fileHandler import FileHandler
 import re
+import os
 import logging
+from dotenv import load_dotenv
+
+from utils.fileHandler import FileHandler
 from utils.authHandler import AuthHandler
 
 class Utils(commands.Cog):
@@ -69,7 +72,18 @@ class Utils(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
+    
+    @commands.Cog.listener(name='on_command')
+    async def log(self, ctx):
+        server = str(ctx.guild.name)
+        user = str(ctx.author)
+        command = str(ctx.command)
+        args = " ".join(str(x) for x in ctx.kwargs.values())
 
+        logChannel = self.bot.get_channel(int(os.getenv("LOGCHANNEL")))
+        
+        returnStr = "```{},{},{},{}```".format(server,user,command,args)
+        await logChannel.send(returnStr)
 
 def setup(bot: commands.Bot):
     bot.add_cog(Utils(bot))
