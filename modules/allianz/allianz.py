@@ -10,6 +10,7 @@ class Allianz(commands.Cog):
         self._bot: commands.bot = bot
         self._PlayerData: PlayerData = PlayerData.instance()
         self._allianzData: dict = {}
+        self._topAllianzData: dict = {}
 
         self.setup()
     
@@ -67,10 +68,22 @@ class Allianz(commands.Cog):
     def setup(self):
         logging.info("Allianz: Get Data references")
         self._allianzData = self._PlayerData.getAllianzDataReference(self.updateCallback)
+        self._topAllianzData = self._getAllTopAllianzMembers(self._allianzData)
 
     def updateCallback(self):
         logging.info("Allianz: Updated Data references")
         self._allianzData = self._PlayerData.getAllianzDataReference()
+        self._topAllianzData = self._getAllTopAllianzMembers(self._allianzData)
+
+    def _getAllTopAllianzMembers(self, fullAllianzData: dict):
+        topAllianzUsers = {}
+        for allianzName in fullAllianzData:
+            allianzUsers: list = fullAllianzData[allianzName]
+            
+            #sort users by rank and keep only top 10
+            topAllianzUsers[allianzName] = sorted(allianzUsers,key=lambda d: d['platz'])[:10]
+        
+        return topAllianzUsers
 
     def _getAllianzPosString(self, allianzName, galaxy):
         allianzPlanetsinGalaxy = self._getAllAllianzPlanetsInGalaxy(allianzName, galaxy)
@@ -112,7 +125,7 @@ class Allianz(commands.Cog):
         returnMsg = f"```Top 10 von Allianz {allianzName}\n"
         returnMsg +="{:1} {:4} {:20} {:<10} {:10} \n\n".format("","","Name", "Punkte", "Flotte")
 
-        for userData in self._allianzData[allianzName]:           
+        for userData in self._topAllianzData[allianzName]:           
             arrow = "-" #equal
             try:
                 diff = int(userData["diff_platz"])

@@ -130,8 +130,7 @@ class PlayerData:
                 self._userData[user]["planets"] = self._planetData[user]
     
     def _setupAllianzData(self):
-        fullAllianzData: dict = self._getAllAllianzMember(self._userData)
-        self._allianzData: dict = self._getAllTopAllianzMembers(fullAllianzData)
+        self._allianzData: dict = self._getAllAllianzMember(self._userData)
 
     def _getAllAllianzMember(self, userdata: dict):
         fullAllianzData = {}
@@ -143,13 +142,3 @@ class PlayerData:
                 fullAllianzData[name] = [userdata[user]]
         
         return fullAllianzData
-    
-    def _getAllTopAllianzMembers(self, fullAllianzData: dict):
-        topAllianzUsers = {}
-        for allianzName in fullAllianzData:
-            allianzUsers: list = fullAllianzData[allianzName]
-            
-            #sort users by rank and keep only top 10
-            topAllianzUsers[allianzName] = sorted(allianzUsers,key=lambda d: d['platz'])[:10]
-        
-        return topAllianzUsers
