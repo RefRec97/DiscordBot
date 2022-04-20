@@ -26,6 +26,31 @@ class Utils(commands.Cog):
         
         await ctx.send(f'https://pr0game.com/game.php?page=galaxy&galaxy={galaxy}&system={system}')
 
+    @commands.check(AuthHandler.instance().check)
+    @commands.command(brief="Zeigt eine NICHT geordnete liste der geplanten updates",
+                      help="Zeigt eine NICHT geordnete liste der geplanten updates.")
+    async def features(self, ctx: commands.context):
+        featureList: list = [
+            "```"
+            "Monde:",
+            "   - Speichern von Monden",
+            "   - Anzeigen von Monden in Stats",
+            "   - Speichern von sensor Phalanx lvl",
+            "       - Überprüfen ob man in Reichweite ist",
+            "Wachstum:",
+            "   - prozentualer wachstum wie unnamed statisik anzeigen",
+            "     als Listenform und auf einzelne Spieler",
+            "Differenz:",
+            "   - Spieler miteinander vergleichen",
+            "     als Chart und gegenüberstellung wie !stats",
+            "   - Vll auch rel. Startpunkt einstellbar. Aka",
+            "     Start ist bei beiden Spieler bei 5k",
+            "Points:",
+            "   - Reimplementieren",
+            "```"
+        ]
+        await ctx.send("\n".join(featureList))
+   
     @link.error
     async def link_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -35,6 +60,15 @@ class Utils(commands.Cog):
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    
+    @features.error
+    async def features_error(self, ctx, error):
+        if isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+
 
 
 def setup(bot: commands.Bot):
