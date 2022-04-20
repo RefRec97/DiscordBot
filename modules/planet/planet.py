@@ -1,3 +1,4 @@
+import inspect
 import logging
 import re
 from discord.ext import commands
@@ -13,13 +14,17 @@ class Planet(commands.Cog):
 
         self.setup()
 
-    @commands.command(usage="<g>:<s>:<p> <username>",
+    @commands.command(usage="<g>:<s>:<p>,<username>",
                       brief="Speichert einen neuen Planeten",
                       help="Speichert den Planet an position <g>:<s>:<p> zu dem spieler <username> ab")
     @commands.check(AuthHandler.instance().check)
-    async def planet(self, ctx: commands.context, position: str, username: str):
-        position = position.lower()
-        username = username.lower()
+    async def planet(self, ctx: commands.context, *, argumente):
+        argumente = argumente.lower()
+        if "," in argumente:
+            position = argumente.split(',')[0]
+            username = argumente.split(',')[1]
+        else:
+            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
 
         if not username in self._userNames:
             await ctx.send('Spieler nicht gefunden')
@@ -40,12 +45,17 @@ class Planet(commands.Cog):
         await ctx.send(returnMsg)
 
     @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<g>:<s>:<p> <username>",
+    @commands.command(usage="<g>:<s>:<p>,<username>",
                       brief="Löscht einen Planeten",
                       help="Löscht den Planet an position <g>:<s>:<p> von dem spieler <username>")
-    async def boom(self, ctx: commands.context, position: str, username: str):
-        position = position.lower()
-        username = username.lower()
+    async def boom(self, ctx: commands.context, *, argumente):
+        argumente = argumente.lower()
+        if "," in argumente:
+            position = argumente.split(',')[0]
+            username = argumente.split(',')[1]
+        else:
+            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
+        
         if not username in self._userNames:
             await ctx.send('Spieler nicht gefunden')
             return
@@ -53,7 +63,7 @@ class Planet(commands.Cog):
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
             position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
         except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !boom 1:1:1 Name')
+            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !boom 1:1:1,Sc0t')
             return
         
         returnMsg: str
@@ -67,7 +77,7 @@ class Planet(commands.Cog):
     @planet.error
     async def planet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !planet 1:1:1 sc0t')
+            await ctx.send('Fehlende Argumente!\nBsp.: !planet 1:1:1,Sc0t')
         elif isinstance(error, commands.CheckFailure):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
@@ -77,7 +87,7 @@ class Planet(commands.Cog):
     @boom.error
     async def boom_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !boom 1:1:1 sc0t')
+            await ctx.send('Fehlende Argumente!\nBsp.: !boom 1:1:1,Sc0t')
         elif isinstance(error, commands.CheckFailure):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:

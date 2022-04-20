@@ -1,4 +1,5 @@
 import logging
+import inspect
 from discord.ext import commands
 
 from utils.playerData import PlayerData
@@ -25,18 +26,16 @@ class Allianz(commands.Cog):
         await ctx.send(self._getAllianzString(allianzName))
 
     @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<allianzname> <galaxy>",
+    @commands.command(usage="<allianzname>,<galaxy>",
                       brief="Zeigt alle Planeten der Allianz in einer Galaxy an",
                       help="Zeigt alle Planeten der Allianz <allianzname> in einer Galaxy <galaxy> an.")
     async def allianzPosition(self, ctx: commands.context, *,argumente):
         argumente = argumente.lower()
-        
-        try:
-            allianzName = argumente.rsplit(' ', 1)[0]
-            galaxy = argumente.rsplit(' ', 1)[1]
-        except:
-            await ctx.send('Fehler bei den Argumenten!')
-            return
+        if "," in argumente:
+            allianzName = argumente.split(',')[0]
+            galaxy = argumente.split(',')[1]
+        else:
+            raise commands.MissingRequiredArgument(param=inspect.Parameter("galaxy",inspect._ParameterKind.VAR_POSITIONAL))
         
         if not allianzName in self._allianzData:
             await ctx.send('Allianzname nicht gefunden')
@@ -58,7 +57,7 @@ class Allianz(commands.Cog):
     @allianzPosition.error
     async def allianzPosition_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !allianzPosition Allianz mit Poll 3')
+            await ctx.send('Fehlende Argumente!\nBsp.: !allianzPosition Allianz mit Poll,3')
         elif isinstance(error, commands.CheckFailure):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:

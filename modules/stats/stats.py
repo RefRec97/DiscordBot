@@ -1,3 +1,4 @@
+from ast import arg
 import logging
 from discord.ext import commands
 from quickchart import QuickChart
@@ -17,28 +18,34 @@ class Stats(commands.Cog):
         self.setup()
     
     @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def stats(self, ctx: commands.context, username: str):
-        """Zeigt die Werte des Spielers <username> an"""
+    @commands.command(usage="<username>",
+                      brief="Zeigt die Werte des Spielers an",
+                      help="Zeigt die Werte des Spielers <username> an")
+    async def stats(self, ctx: commands.context, *,username):
         username = username.lower()
         await ctx.send(self._getStatsString(username))
 
     @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def history(self, ctx: commands.context, username: str):
-        """Zeigt die Historie des Spielers <username> an"""
+    @commands.command(usage="<username>",
+                      brief="Zeigt die History des Spielers an",
+                      help="Zeigt die History der letzen 7 Tage des Spielers <username> an")
+    async def history(self, ctx: commands.context, *,username):
         username = username.lower()
         await ctx.send(self._getHistoryString(username))
 
     @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<username> [size]",
+    @commands.command(usage="<username>,[size]",
                       brief="Zeigt ein Diagramm an",
                       help="Zeigt ein Diagramm für den User <username> an. Die größe wird über den optionalen " +
                            "parameter [size] angepasst. Mögliche größen sind: S, M, L, XL (default: M)")
-    async def chart(self, ctx: commands.context, username: str, size: str = None):
-        username = username.lower()
-        if isinstance(size,str):
-            size = size.lower()
+    async def chart(self, ctx: commands.context, *,argumente):
+        argumente = argumente.lower()
+        if "," in argumente:
+            username = argumente.split(',')[0]
+            size = argumente.split(',')[1]
+        else:
+            username = argumente.split(',')[0]
+            size = 'm'
         
         if not username in self._historyData:
             return "Nutzer nicht gefunden"
