@@ -56,25 +56,10 @@ class PlayerData:
             self._callbacks.append(callback)
         return self._allianzData
 
-    def addPlanet(self, position, username):
-        #savePlanetData on currentClass
-        if not position in self._planetData[username]:
-            self._planetData[username].append(position)
-
-            result = self._fileHandler.setPlanetData(self._planetData)
-        else:
-            result = False
-        
-        return result
-
-    def delPlanet(self, position, username):
-        if position in self._planetData[username]:
-            self._planetData[username].remove(position)
-            result = self._fileHandler.setPlanetData(self._planetData)
-        else:
-            result = False
-        
-        return result
+    def getPlanetDataReference(self, callback=None):
+        if callback and not callback in self._callbacks:
+            self._callbacks.append(callback)
+        return self._planetData
 
     def setUpdateCallback(self, callback):
         self._updateCallback = callback

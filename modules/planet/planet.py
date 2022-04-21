@@ -3,14 +3,16 @@ import logging
 import re
 from discord.ext import commands
 
+from utils.fileHandler import FileHandler
 from utils.playerData import PlayerData
 from utils.authHandler import AuthHandler
 
 class Planet(commands.Cog):
     def __init__(self, bot: commands.bot):
         self._bot: commands.bot = bot
+        self._FileHandler: FileHandler = FileHandler.instance()
         self._PlayerData: PlayerData = PlayerData.instance()
-        self._userNames: list = []
+        self._planetData: dict = {}
 
         self.setup()
 
@@ -18,7 +20,7 @@ class Planet(commands.Cog):
                       brief="Speichert einen neuen Planeten",
                       help="Speichert den Planet an position <g>:<s>:<p> zu dem spieler <username> ab")
     @commands.check(AuthHandler.instance().check)
-    async def planet(self, ctx: commands.context, *, argumente):
+    async def addPlanet(self, ctx: commands.context, *, argumente):
         argumente = argumente.lower()
         if "," in argumente:
             position = argumente.split(',')[0]
@@ -26,68 +28,170 @@ class Planet(commands.Cog):
         else:
             raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
 
-        if not username in self._userNames:
-            await ctx.send('Spieler nicht gefunden')
-            return
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
             position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
         except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !planet 1:1:1 Name')
+            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !addPlanet 1:1:1,Name')
+            return
+        if not username in self._planetData:
+            await ctx.send('Spieler nicht gefunden')
             return
         
-        returnMsg: str
-        if self._addPlanet(position, username):
-            returnMsg = "Planet gespeichert"
-        else:
-            returnMsg = "Fehler beim Speichern des Planeten"
 
-        await ctx.send(returnMsg)
+        if position in self._planetData[username]:
+            await ctx.send('Planet bereits gespeichert')
+            return
+        else:
+            planet = {"moon": False}
+            self._planetData[username][position] = planet
+            if not self._FileHandler.setPlanetData(self._planetData):
+                await ctx.send('Fehler beim Speichern des Planeten')
+                return
+
+        await ctx.send('Planet gespeichert')
 
     @commands.check(AuthHandler.instance().check)
     @commands.command(usage="<g>:<s>:<p>,<username>",
                       brief="Löscht einen Planeten",
                       help="Löscht den Planet an position <g>:<s>:<p> von dem spieler <username>")
-    async def boom(self, ctx: commands.context, *, argumente):
+    async def delPlanet(self, ctx: commands.context, *, argumente):
         argumente = argumente.lower()
         if "," in argumente:
             position = argumente.split(',')[0]
             username = argumente.split(',')[1]
         else:
             raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
-        
-        if not username in self._userNames:
+
+        if not username in self._planetData:
             await ctx.send('Spieler nicht gefunden')
             return
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
             position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
         except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !boom 1:1:1,Sc0t')
+            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delPlanet 1:1:1,Sc0t')
             return
         
-        returnMsg: str
-        if self._delPlanet(position, username):
-            returnMsg = "Planet gelöscht"
+        if not position in self._planetData[username]:
+            await ctx.send('Planet nicht vorhanden')
+            return
         else:
-            returnMsg = "Fehler beim Löschen des Planeten"
+            self._planetData[username].pop(position,None)
+            if not self._FileHandler.setPlanetData(self._planetData):
+                await ctx.send('Fehler beim Löschen des Planeten')
+                return
         
-        await ctx.send(returnMsg)
+        await ctx.send('Planet gelöscht')
 
-    @planet.error
-    async def planet_error(self, ctx, error):
+    @commands.command(usage="<g>:<s>:<p>,<username>",
+                      brief="Speichert einen neuen Mond",
+                      help="Speichert den Mond an position <g>:<s>:<p> zu dem spieler <username> ab")
+    @commands.check(AuthHandler.instance().check)
+    async def addMoon(self, ctx: commands.context, *, argumente):
+        argumente = argumente.lower()
+        if "," in argumente:
+            position = argumente.split(',')[0]
+            username = argumente.split(',')[1]
+        else:
+            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
+
+        try:
+            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
+            position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
+        except:
+            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
+            return
+        if not username in self._planetData:
+            await ctx.send('Spieler nicht gefunden')
+            return
+        
+
+        if not position in self._planetData[username]:
+            await ctx.send('Kein Planet auf der Position')
+            return
+        elif self._planetData[username][position]["moon"] == True:
+            await ctx.send('Mond bereits gespeichert')
+            return
+        else:
+            self._planetData[username][position]["moon"] = True
+            if not self._FileHandler.setPlanetData(self._planetData):
+                await ctx.send('Fehler beim Speichern des Mondes')
+                return
+
+        await ctx.send('Mond gespeichert')
+    
+    @commands.command(usage="<g>:<s>:<p>,<username>",
+                      brief="Löscht einen Mond",
+                      help="Löscht den Mond an position <g>:<s>:<p> von dem spieler <username>")
+    @commands.check(AuthHandler.instance().check)
+    async def delMoon(self, ctx: commands.context, *, argumente):
+        argumente = argumente.lower()
+        if "," in argumente:
+            position = argumente.split(',')[0]
+            username = argumente.split(',')[1]
+        else:
+            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
+
+        try:
+            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
+            position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
+        except:
+            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delMoon 1:1:1,Name')
+            return
+        if not username in self._planetData:
+            await ctx.send('Spieler nicht gefunden')
+            return
+        
+        if not position in self._planetData[username]:
+            await ctx.send('Kein Planet auf der Position')
+            return
+        elif self._planetData[username][position]["moon"] == False:
+            await ctx.send('Mond bereits gelöscht')
+            return
+        else:
+            self._planetData[username][position]["moon"] = False
+            if not self._FileHandler.setPlanetData(self._planetData):
+                await ctx.send('Fehler beim Löschen des Mondes')
+                return
+
+        await ctx.send('Mond gelöscht')
+
+
+    @addPlanet.error
+    async def addPlanet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !planet 1:1:1,Sc0t')
+            await ctx.send('Fehlende Argumente!\nBsp.: !addPlanet 1:1:1,Sc0t')
         elif isinstance(error, commands.CheckFailure):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @boom.error
-    async def boom_error(self, ctx, error):
+    @delPlanet.error
+    async def delPlanet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !boom 1:1:1,Sc0t')
+            await ctx.send('Fehlende Argumente!\nBsp.: !delPlanet 1:1:1,Sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    
+    @addMoon.error
+    async def addMoon_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Fehlende Argumente!\nBsp.: !addMoon 1:1:1,Sc0t')
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send('Keine rechte diesen Befehl zu nutzen')
+        else:
+            logging.error(error)
+            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    
+    @delMoon.error
+    async def delMoon_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Fehlende Argumente!\nBsp.: !delMoon 1:1:1,Sc0t')
         elif isinstance(error, commands.CheckFailure):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
@@ -96,17 +200,11 @@ class Planet(commands.Cog):
 
     def setup(self):
         logging.info("Planet: Get Data references")
-        self._userNames = self._PlayerData.getUserNamesReference(self.updateCallback)
+        self._planetData = self._PlayerData.getPlanetDataReference(self.updateCallback)
 
     def updateCallback(self):
-        logging.info("Planet: Updated Data references")
-        self._userNames = self._PlayerData.getUserNamesReference()
-
-    def _addPlanet(self, position, user):
-        return self._PlayerData.addPlanet(position, user)
-    
-    def _delPlanet(self, position, user):
-        return self._PlayerData.delPlanet(position, user)
+        logging.info("Planet: Updated PlanetData references")
+        self._planetData = self._PlayerData.getPlanetDataReference()
 
 def setup(bot: commands.Bot):
     bot.add_cog(Planet(bot))

@@ -36,8 +36,6 @@ class Utils(commands.Cog):
         featureList: list = [
             "```"
             "Monde:",
-            "   - Speichern von Monden",
-            "   - Anzeigen von Monden in Stats",
             "   - Speichern von sensor Phalanx lvl",
             "       - Überprüfen ob man in Reichweite ist",
             "Wachstum:",
@@ -50,6 +48,10 @@ class Utils(commands.Cog):
             "     Start ist bei beiden Spieler bei 5k",
             "Points:",
             "   - Reimplementieren",
+            "Usernamen:",
+            "   - Usernamen mit Hauptlaneten speichern, sodass",
+            "     bei namensänderungen weiterhin der gleiche Spieler",
+            "     getrackt wird",
             "```"
         ]
         await ctx.send("\n".join(featureList))

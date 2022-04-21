@@ -314,8 +314,12 @@ class Stats(commands.Cog):
         
         #addPlanetData
         returnMsg += "\n{0:30}\n".format("Bekannte Planeten")
-        for planetPos in userData["planets"]:
-            returnMsg += "[{}]\n".format(planetPos)
+        returnMsg += "{0:7} Mond?\n".format("Pos.")
+        for planetPos in sorted(userData["planets"]):
+            if userData["planets"][planetPos]["moon"]:
+                returnMsg += "{:7}  \u2713\n".format(planetPos)
+            else:
+                returnMsg += "{:7}\n".format(planetPos)
         
         return returnMsg + "```"
 
