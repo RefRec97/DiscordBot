@@ -75,7 +75,10 @@ class Utils(commands.Cog):
     
     @commands.Cog.listener(name='on_command')
     async def log(self, ctx):
-        server = str(ctx.guild.name)
+        if ctx.guild:
+            server = str(ctx.guild.name)
+        else:
+            server = "private"
         user = str(ctx.author)
         command = str(ctx.command)
         args = " ".join(str(x) for x in ctx.kwargs.values())
