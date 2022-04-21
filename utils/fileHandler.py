@@ -45,6 +45,10 @@ class FileHandler:
 
         try:
             if historyFileNames.valid:
+                if not date.today().strftime("%d_%m_%Y") in historyFileNames.data["filenames"]:
+                    historyFileNames.data["filenames"].append(date.today().strftime("%d_%m_%Y"))
+                    self._writeFile(self._historyFileNames, historyFileNames.data)
+
                 self._historyData.data = {}
                 for file in historyFileNames.data["filenames"]:
                     day = self._readFile(self._path + file + self._fileEnding)
@@ -56,9 +60,6 @@ class FileHandler:
                             else:
                                 self._historyData.data[userName] = [day.data[userName]]
             self._historyData.valid = True
-            if not date.today().strftime("%d_%m_%Y") in historyFileNames.data["filenames"]:
-                historyFileNames.data["filenames"].append(date.today().strftime("%d_%m_%Y"))
-                self._writeFile(self._historyFileNames, historyFileNames.data)
         except:
             self._historyData.valid = False
             logging.error("FileHandler: Failed to read/parse History Files")
