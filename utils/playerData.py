@@ -16,13 +16,16 @@ class PlayerData:
         self._allianzData = {}
         self._userNames = []
         self._callbacks = []
+        self._updateCallback = None
 
         self.daily.start()
     
     @tasks.loop(hours=24)
     async def daily(self):
         logging.info("PlayerData: Daily update started")
+        await self._updateCallback("Updating Data ...")
         self.updateData()
+        await self._updateCallback("Update complete")
 
     def updateData(self):
         logging.info("PlayerData: Updating data")
@@ -72,6 +75,9 @@ class PlayerData:
             result = False
         
         return result
+
+    def setUpdateCallback(self, callback):
+        self._updateCallback = callback
 
     def _sendUpdateRequest(self):
         for callback in self._callbacks:

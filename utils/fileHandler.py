@@ -20,11 +20,13 @@ class FileHandler:
         self._historyData = MyData({})
         self._planetData = MyData()
         self._authData = MyData()
+        self._channelData = MyData()
         self._sitesToParse = 10          #each site has 100 Player
         self._lastUpdate = "N/A"
         self._historyFileNames = self._path + "historyFileNames" + self._fileEnding
         self._planetDataFile = self._path + "planetData" + self._fileEnding
         self._authFile = self._path + "auth" + self._fileEnding
+        self._channelFile = self._path + "channelIds" + self._fileEnding
 
     def getCurrentData(self):
         currentFileName = self._getCurrentFileName()
@@ -89,6 +91,18 @@ class FileHandler:
     def setAuthData(self, data):
         self._authData = data
         return self._writeFile(self._authFile, data)
+
+    def getUpdateChannels(self):
+        channelData: MyData = self._readFile(self._channelFile)
+
+        if channelData.valid:
+            self._channelData = channelData
+        
+        return self._channelData
+
+    def setUpdateChannels(self, data):
+        self._channelData = data
+        return self._writeFile(self._channelFile, data)
 
     def _getCurrentFileName(self):
         today = date.today()
