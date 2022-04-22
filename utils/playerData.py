@@ -18,7 +18,8 @@ class PlayerData:
         self._callbacks = []
         self._updateCallback = None
 
-        self.daily.start()
+        #self.daily.start()
+        self.updateData()
     
     @tasks.loop(hours=24)
     async def daily(self):
@@ -28,6 +29,7 @@ class PlayerData:
         await self._updateCallback("Update complete")
 
     def updateData(self):
+        
         logging.info("PlayerData: Updating data")
         #_updateUserData needs to be first
         self._updateUserData()

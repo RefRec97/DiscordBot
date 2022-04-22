@@ -36,6 +36,8 @@ class FileHandler:
             self._currentData: MyData = self._readFile(currentFileName)
             self._lastUpdate =  date.today().strftime("%d_%m_%Y")
         else:
+            self._currentData: MyData = self._readFile(self._path + "22_04_2022.json")
+            return self._currentData
             self._currentData = self._scrape()
         
         return self._currentData
@@ -133,6 +135,7 @@ class FileHandler:
         return True
 
     def _scrape(self):
+        return
         """ToDo: Move in seperate File"""
         logging.info("FileHandler: Start Scraping Pr0game ...")
         
