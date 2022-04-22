@@ -5,6 +5,7 @@ import logging
 
 
 from modules import *
+from utils.authHandler import AuthHandler
 from utils.playerData import PlayerData
 
 def main():
@@ -14,8 +15,10 @@ def main():
 
     client = commands.Bot(command_prefix="!", case_insensitive=True)
     
-    #Initialize PlayerData
+    #Initialize Singeltons
     playerData = PlayerData.instance()
+    autHandler = AuthHandler.instance()
+    autHandler.addBot(client)
 
     for name in os.listdir(os.path.join(os.path.abspath(os.getcwd()),"modules")):
         if os.path.exists(os.path.join("modules", name)):

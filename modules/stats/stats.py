@@ -51,8 +51,15 @@ class Stats(commands.Cog):
             return "Nutzer nicht gefunden"
 
         chartData = self._setupChartData(self._historyData[username])
-       
-        await ctx.send(self._getChartURL(chartData, size))
+        
+        
+        url = self._getChartURL(chartData, size)
+        if username == "drai":
+            returnMsg = "Achtung nichts für schwache Nerven:\n" + url
+        else:
+            returnMsg = url
+        
+        await ctx.send(returnMsg)
 
     @commands.check(AuthHandler.instance().check)
     @commands.command(usage="<galaxy>",
