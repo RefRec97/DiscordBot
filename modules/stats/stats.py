@@ -1,18 +1,18 @@
 from ast import arg
 import logging
 from discord.ext import commands
+from h11 import Data
 from quickchart import QuickChart
-
-from utils.playerData import PlayerData
+import utils.db as Database
 from utils.authHandler import AuthHandler
 
 class Stats(commands.Cog):
     def __init__(self, bot: commands.bot):
         self._bot: commands.bot = bot
-        self._PlayerData: PlayerData = PlayerData.instance()
-        self._fields = ["platz", "username", "allianz", "heimatplanet", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
+        self._fields = ["platz", "username", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
         self._userData: dict = {}
         self._historyData: dict = {}
+        self._db = Database.db()
 
         
         self.setup()
@@ -54,10 +54,7 @@ class Stats(commands.Cog):
         
         
         url = self._getChartURL(chartData, size)
-        if username == "drai":
-            returnMsg = "Achtung nichts für schwache Nerven:\n" + url
-        else:
-            returnMsg = url
+        returnMsg = url
         
         await ctx.send(returnMsg)
 
@@ -306,7 +303,7 @@ class Stats(commands.Cog):
         return returnMsg + "```"
 
     def _getStatsString(self, username):
-        if not username in self._userData:
+        if not self._db.check_player:
             return "Nutzer nicht gefunden"
         userData = self._userData[username]
 
@@ -314,16 +311,16 @@ class Stats(commands.Cog):
         for field in self._fields:
             if f"diff_{field}" in userData:
                 returnMsg += "{0:30}{1:10} ({2})\n".format(field.capitalize(),str(userData[field]), userData["diff_" +field])
-            elif userData[field] == "sc0t":
-                returnMsg += "{0:30}{1:10} {2}\n".format(field.capitalize(),userData[field], "<- Noob")
             else:
                 returnMsg += "{0:30}{1}\n".format(field.capitalize(),userData[field])
         
         #addPlanetData
+        userplanets = self._db.get_playerplanets(username)
+        usermoons = self._db.get_playermoons(username)
         returnMsg += "\n{0:30}\n".format("Bekannte Planeten")
         returnMsg += "{0:7} Mond?\n".format("Pos.")
-        for planetPos in sorted(userData["planets"]):
-            if userData["planets"][planetPos]["moon"]:
+        for planetPos in userplanets:
+            if planetPos in usermoons:
                 returnMsg += "{:7}  \u2713\n".format(planetPos)
             else:
                 returnMsg += "{:7}\n".format(planetPos)

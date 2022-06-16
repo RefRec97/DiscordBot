@@ -3,18 +3,14 @@ import logging
 import re
 from discord.ext import commands
 
-from utils.fileHandler import FileHandler
-from utils.playerData import PlayerData
 from utils.authHandler import AuthHandler
+import utils.db as Database
 
 class Planet(commands.Cog):
     def __init__(self, bot: commands.bot):
         self._bot: commands.bot = bot
-        self._FileHandler: FileHandler = FileHandler.instance()
-        self._PlayerData: PlayerData = PlayerData.instance()
         self._planetData: dict = {}
-
-        self.setup()
+        self._db = Database.db()
 
     @commands.command(usage="<g>:<s>:<p>,<username>",
                       brief="Speichert einen neuen Planeten",
@@ -30,24 +26,23 @@ class Planet(commands.Cog):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
+            galaxy = result.group(1)
+            system = result.group(2)
+            location = result.group(3)
         except:
             await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !addPlanet 1:1:1,Name')
             return
-        if not username in self._planetData:
+        if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
         
-
-        if position in self._planetData[username]:
+        id = self._db.get_id(username)
+        if self._db.check_planets(galaxy, system, location):
             await ctx.send('Planet bereits gespeichert')
             return
         else:
-            planet = {"moon": False}
-            self._planetData[username][position] = planet
-            if not self._FileHandler.setPlanetData(self._planetData):
-                await ctx.send('Fehler beim Speichern des Planeten')
-                return
+            self._db.add_planet(galaxy, system, location, id)
+            #todo check for failure
 
         await ctx.send('Planet gespeichert')
 
@@ -63,24 +58,25 @@ class Planet(commands.Cog):
         else:
             raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
 
-        if not username in self._planetData:
+        if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
+            galaxy = result.group(1)
+            system = result.group(2)
+            location = result.group(3)
         except:
             await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delPlanet 1:1:1,Sc0t')
             return
-        
-        if not position in self._planetData[username]:
+
+        id = self._db.get_id(username)
+        if not self._db.check_planets(galaxy, system, location):
             await ctx.send('Planet nicht vorhanden')
             return
         else:
-            self._planetData[username].pop(position,None)
-            if not self._FileHandler.setPlanetData(self._planetData):
-                await ctx.send('Fehler beim Löschen des Planeten')
-                return
+            self._db.del_planet(galaxy, system, location)
+            #todo: check for failure
         
         await ctx.send('Planet gelöscht')
 
@@ -98,26 +94,26 @@ class Planet(commands.Cog):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
+            galaxy = result.group(1)
+            system = result.group(2)
+            location = result.group(3)
         except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
+            await ctx.send('Position konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
             return
-        if not username in self._planetData:
+        if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
         
-
-        if not position in self._planetData[username]:
+        id = self._db.get_id(username)
+        if not self._db.check_planets(galaxy, system, location):
             await ctx.send('Kein Planet auf der Position')
             return
-        elif self._planetData[username][position]["moon"] == True:
+        elif self._db.check_moon(galaxy, system, location):
             await ctx.send('Mond bereits gespeichert')
             return
         else:
-            self._planetData[username][position]["moon"] = True
-            if not self._FileHandler.setPlanetData(self._planetData):
-                await ctx.send('Fehler beim Speichern des Mondes')
-                return
+            self._db.add_moon(galaxy, system, location, id)
+            #todo: check for failure
 
         await ctx.send('Mond gespeichert')
     
@@ -135,25 +131,26 @@ class Planet(commands.Cog):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            position = "{}:{}:{}".format(result.group(1),result.group(2),result.group(3))
+            galaxy = result.group(1)
+            system = result.group(2)
+            location = result.group(3)
         except:
             await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delMoon 1:1:1,Name')
             return
-        if not username in self._planetData:
+        if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
         
-        if not position in self._planetData[username]:
+        id = self._db.get_id(username)
+        if not self._db.check_planets(galaxy, system, location):
             await ctx.send('Kein Planet auf der Position')
             return
-        elif self._planetData[username][position]["moon"] == False:
+        elif not self._db.check_moon(galaxy, system, location):
             await ctx.send('Mond bereits gelöscht')
             return
         else:
-            self._planetData[username][position]["moon"] = False
-            if not self._FileHandler.setPlanetData(self._planetData):
-                await ctx.send('Fehler beim Löschen des Mondes')
-                return
+            self._db.del_moon(galaxy, system, location)
+            #todo: check failure
 
         await ctx.send('Mond gelöscht')
 
@@ -197,14 +194,6 @@ class Planet(commands.Cog):
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
-
-    def setup(self):
-        logging.info("Planet: Get Data references")
-        self._planetData = self._PlayerData.getPlanetDataReference(self.updateCallback)
-
-    def updateCallback(self):
-        logging.info("Planet: Updated PlanetData references")
-        self._planetData = self._PlayerData.getPlanetDataReference()
 
 def setup(bot: commands.Bot):
     bot.add_cog(Planet(bot))

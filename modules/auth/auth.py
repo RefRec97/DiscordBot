@@ -20,7 +20,7 @@ class Authentication(commands.Cog):
             field = argumente.split(',')[1]
         else:
             raise commands.MissingRequiredArgument(param=inspect.Parameter("field",inspect._ParameterKind.VAR_POSITIONAL))
-        
+        #todo: add update logic
         if self._auth.add(username, field):
             returnMsg = "Erfolgreich Authorisiert"
         else:
@@ -53,7 +53,7 @@ class Authentication(commands.Cog):
         """Deauthorisiert Nutzer auf den Bot"""
         username = username.lower()
        
-        if self._auth.remove(username, "all"):
+        if self._auth.remove(username):
             returnMsg = "Bonk!"
         else:
             returnMsg = "Bonk hammer kaputt"

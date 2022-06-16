@@ -2,15 +2,12 @@ from discord.ext import commands
 import re
 import os
 import logging
-from dotenv import load_dotenv
 
-from utils.fileHandler import FileHandler
 from utils.authHandler import AuthHandler
 
 class Utils(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
-        self.FileHandler = FileHandler.instance()
         self.lastUpdate = "N/A"
     
     @commands.check(AuthHandler.instance().check)
@@ -48,10 +45,6 @@ class Utils(commands.Cog):
             "     Start ist bei beiden Spieler bei 5k",
             "Points:",
             "   - Reimplementieren",
-            "Usernamen:",
-            "   - Usernamen mit Hauptlaneten speichern, sodass",
-            "     bei namensänderungen weiterhin der gleiche Spieler",
-            "     getrackt wird",
             "```"
         ]
         await ctx.send("\n".join(featureList))

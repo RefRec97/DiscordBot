@@ -1,14 +1,14 @@
 import logging
-
+import datetime
 from discord.ext import commands
-from utils.fileHandler import FileHandler
 from utils.authHandler import AuthHandler
+import utils.db as Database
 
 class Status(commands.Cog):
     def __init__(self, bot: commands.bot):
         self.bot = bot
-        self.FileHandler = FileHandler.instance()
         self.lastUpdate = "N/A"
+        self._db = Database.db()
     
     @commands.check(AuthHandler.instance().check)
     @commands.command()
@@ -19,8 +19,9 @@ class Status(commands.Cog):
     @commands.check(AuthHandler.instance().check)
     @commands.command()
     async def status(self, ctx: commands.context):
+        lastUpdate = self._db.check_time(datetime.date.today())
         """Stand des Datensatzes"""
-        await ctx.send(f"Letztes Update: {self.FileHandler.getLastUpdate()}")
+        await ctx.send(f"Letztes Update: {lastUpdate}")
 
     @test.error
     async def test_error(self, ctx, error):
