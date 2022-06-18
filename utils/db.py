@@ -17,22 +17,107 @@ class db:
     def teardown(self):
         self.mydb.close()
 
+    def get_player_chart_history(self,player_name):
+        
+        self.setup()
+        select_cursor = self.mydb.cursor(buffered=True)
+
+        #check player
+        select_cursor.execute('Select data.generalRank, data.generalScore, data.buildingScore,'+
+            ' data.researchScore, data.fleetScore, data.date, data.defensiveScore from data'+
+            ' inner join players on data.playerId = players.playerId'+
+            ' where players.name = %s order by date asc;',(player_name,))
+        result = select_cursor.fetchall()
+        select_cursor.close()
+        self.teardown()
+        return result
+    
     def get_player_history(self,player_name):
         
         self.setup()
         select_cursor = self.mydb.cursor(buffered=True)
 
         #check player
-        select_cursor.execute('Select data.*,players.name from data inner join players on data.playerId = players.playerId where players.name = %s;',player_name)
+        select_cursor.execute('Select data.generalRank, data.generalScore, data.buildingScore,'+
+            ' data.fleetScore, data.date from data'+
+            ' inner join players on data.playerId = players.playerId'+
+            ' where players.name = %s order by date desc;',(player_name,))
+        data = select_cursor.fetchall()
+        row_count = select_cursor.rowcount
+        result = []
+        temp = []
+        if row_count > 7:
+            i = 7
+        else:
+            i = row_count
+        
+        for row in data:
+            temp.append(row)
+            i = i - 1
+            if i < 1:
+                break
+
+        for row in reversed(temp):
+            result.append(row)
+        
+        select_cursor.close()
+        self.teardown()
+        return result
+
+    def get_player_stats(self,player_name):
+        
+        self.setup()
+        select_cursor = self.mydb.cursor(buffered=True)
+        today = str(datetime.date.today()) + "%"
+        select_cursor.execute("Select * from data where date like %s;",(today,))
+        row_count = select_cursor.rowcount
+        if row_count > 0:
+            today = str(datetime.date.today()) + "%"
+            yesterday = str(datetime.date.today() - datetime.timedelta(days=1)) + "%"
+        else:
+            today = str(datetime.date.today()- datetime.timedelta(days=1)) + "%"
+            yesterday = str(datetime.date.today() - datetime.timedelta(days=2)) + "%"
+        
+        #check player
+        #"username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"
+        #generalRank, ,generalScore, fleetScore, defensiveScore, buildingScore, researchScore
+        select_cursor.execute('Select data.generalRank, alliances.name, data.generalScore,'+
+            ' data.fleetScore, data.defensiveScore, data.buildingScore, data.researchScore from data'+
+            ' inner join players on data.playerId = players.playerId'+
+            ' inner join alliances on players.allianceId = alliances.allianceId'+
+            ' where players.name = %s and (date like %s or date like %s) order by date asc;',(player_name,today,yesterday))
         result = select_cursor.fetchall()
         select_cursor.close()
         self.teardown()
         return result
+
+    def get_all_player_stats(self, delta: int):
+        #get palyer stats for 2 dates to determine inactives
+        self.setup()
+        select_cursor = self.mydb.cursor(buffered=True)
+        today = str(datetime.date.today()) + "%"
+        select_cursor.execute("Select * from data where date like %s;",(today,))
+        row_count = select_cursor.rowcount
+        if row_count > 0:
+            today = str(datetime.date.today()) + "%"
+            yesterday = str(datetime.date.today() - datetime.timedelta(days=delta)) + "%"
+        else:
+            today = str(datetime.date.today()- datetime.timedelta(days=1)) + "%"
+            yesterday = str(datetime.date.today() - datetime.timedelta(days=delta+1)) + "%"
         
+        #check player
+        #"username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"
+        #generalRank, ,generalScore, fleetScore, defensiveScore, buildingScore, researchScore
+        select_cursor.execute('Select data.generalScore, data.playerId from data'+
+            ' where date like %s or date like %s order by date asc;',(today,yesterday))
+        result = select_cursor.fetchall()
+        select_cursor.close()
+        self.teardown()
+        return result
+    
     def add_auth(self, user, role):
         self.setup()
         cursor = self.mydb.cursor()
-        #cursor.execute("insert into auth values (%s, %s);",user,role)
         cursor.execute('insert into auth values (%s,%s);',(user,role))
         self.mydb.commit()
         cursor.close()
@@ -147,7 +232,7 @@ class db:
         cursor = self.mydb.cursor()
         cursor.execute('select moons.galaxy, moons.solarsystem, moons.position from moons '+
             'inner join players on players.playerId = moons.playerId '+
-            'where players.name = %s order by galaxy asc, solarsystem asc, position asc;', (player,))
+            'where players.name = %s order by galaxy asc, solarsystem asc, position desc;', (player,))
         data = cursor.fetchall()
         result = []
         for row in data:

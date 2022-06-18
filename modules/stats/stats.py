@@ -5,14 +5,14 @@ from h11 import Data
 from quickchart import QuickChart
 import utils.db as Database
 from utils.authHandler import AuthHandler
+import utils.playerData
 
 class Stats(commands.Cog):
     def __init__(self, bot: commands.bot):
         self._bot: commands.bot = bot
-        self._fields = ["platz", "username", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
-        self._userData: dict = {}
-        self._historyData: dict = {}
+        self._fields = ["username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
         self._db = Database.db()
+        self._playerData = utils.playerData.PlayerData.instance()
 
         
         self.setup()
@@ -47,10 +47,11 @@ class Stats(commands.Cog):
             username = argumente.split(',')[0]
             size = 'm'
         
-        if not username in self._historyData:
+        if not self._db.check_player(username):
             return "Nutzer nicht gefunden"
 
-        chartData = self._setupChartData(self._historyData[username])
+        data = self._db.get_player_chart_history(username)
+        chartData = self._playerData.build_chart_dict(data)
         
         
         url = self._getChartURL(chartData, size)
@@ -68,7 +69,8 @@ class Stats(commands.Cog):
         if galaxy <1 or galaxy>9:
             return ctx.send("Galaxy muss zwischen 1 und 9 sein")
 
-        await ctx.send(self._getInactiveString(galaxy))
+        #await ctx.send(self._getInactiveString(galaxy))
+        await ctx.send("currently under construction")
 
     @stats.error
     async def stats_error(self, ctx, error):
@@ -112,16 +114,12 @@ class Stats(commands.Cog):
 
     def setup(self):
         logging.info("Stats: Get Data references")
-        self._userData = self._PlayerData.getUserDataReference(self.updateUserDataCallback)
-        self._historyData = self._PlayerData.getHistoryDataReference(self.updateHistoryDataCallback)
 
     def updateUserDataCallback(self):
         logging.info("Stats: Update UserData references")
-        self._userData = self._PlayerData.getUserDataReference()
     
     def updateHistoryDataCallback(self):
         logging.info("Stats: Update HistoryData references")
-        self._historyData = self._PlayerData.getHistoryDataReference()
 
     def _getInactiveString(self, galaxy: int):
         inactivePlayers = self._getLoosingPointsPlayer(galaxy)
@@ -203,7 +201,7 @@ class Stats(commands.Cog):
         qc.config = {
             "type": "line",
             "data": {
-                "labels": chartData["labels"],
+                "labels": chartData["date"],
                 "datasets": [{
                     "yAxisID": "rankAxis",
                     "label": "Platz",
@@ -261,58 +259,47 @@ class Stats(commands.Cog):
         }
         return qc.get_short_url()
 
-    def _setupChartData(self, historyData: dict):
-        chartData= {
-            "labels": [],
-            "gesamt": [],
-            "platz": [],
-            "flotte": [],
-            "gebäude": [],
-            "defensive": [],
-            "forschung": []
-        }
-
-        for day in historyData:
-            chartData["labels"].append(day["timestamp"].rsplit("_",1)[0].replace("_","."))
-            chartData["gesamt"].append(day["gesamt"].replace(".",""))
-            chartData["platz"].append(day["platz"])
-            chartData["flotte"].append(day["flotte"].replace(".",""))
-            chartData["gebäude"].append(day["gebäude"].replace(".",""))
-            chartData["defensive"].append(day["defensive"].replace(".",""))
-            chartData["forschung"].append(day["forschung"].replace(".",""))
-
-        return chartData
-
     def _getHistoryString(self, username):
-        if not username in self._historyData:
+        if not self._db.check_player(username):
             return "Nutzer nicht gefunden"
         
         #only use last 7 entrys
-        data = self._historyData[username][-7:]
-
+        data = self._db.get_player_history(username) #get for last 7 days
+        chartData = self._playerData.build_history_dict(data)
         returnMsg = f"```Spieler {username}\n\n"
-        returnMsg +="{0:7} {1:5} {2:10} {3:10} {4:10}\n".format("Datum", "P.", "Gesamt", "Flotte", "Gebäude")
-        for entry in data:
-            returnMsg += "{0:7} {1:5} {2:10} {3:10} {4:10}\n".format(entry["timestamp"].rsplit("_",1)[0].replace("_","."), str(entry["platz"]),
+        returnMsg +="{0:11} {1:7} {2:10} {3:10} {4:10}\n".format("Datum", "P.", "Gesamt", "Flotte", "Gebäude")
+        for entry in chartData:
+            returnMsg += "{0:11} {1:3} {2:10} {3:10} {4:10}\n".format(entry["date"], str(entry["platz"]),
                                                                      entry["gesamt"] ,entry["flotte"], entry["gebäude"])
-        returnMsg += "{0:7} {1:5} {2:10} {3:10} {4:10}\n".format("Diff.", 
-                                                                 self._userData[username]["diff_platz"],
-                                                                 self._userData[username]["diff_gesamt"],
-                                                                 self._userData[username]["diff_flotte"],
-                                                                 self._userData[username]["diff_gebäude"])
+        returnMsg += "{0:9} {1:5} {2:10} {3:10} {4:10}\n".format("Diff.", 
+                                                                 (chartData[len(chartData)-1]["platz"])-(chartData[len(chartData)-2]["platz"]),
+                                                                 (chartData[len(chartData)-1]["gesamt"])-(chartData[len(chartData)-2]["gesamt"]),
+                                                                 (chartData[len(chartData)-1]["flotte"])-(chartData[len(chartData)-2]["flotte"]),
+                                                                 (chartData[len(chartData)-1]["gebäude"])-(chartData[len(chartData)-2]["gebäude"]))
         return returnMsg + "```"
 
     def _getStatsString(self, username):
         if not self._db.check_player:
             return "Nutzer nicht gefunden"
-        userData = self._userData[username]
-
+        userData = self._db.get_player_stats(username)
+        #"username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"
         returnMsg = "```"
-        for field in self._fields:
-            if f"diff_{field}" in userData:
-                returnMsg += "{0:30}{1:10} ({2})\n".format(field.capitalize(),str(userData[field]), userData["diff_" +field])
-            else:
-                returnMsg += "{0:30}{1}\n".format(field.capitalize(),userData[field])
+        #name
+        returnMsg += "{0:30}{1}\n".format(self._fields[0].capitalize(),username)
+        #platz
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[1].capitalize(),str(userData[0][0]), str(userData[1][0]-userData[0][0]))
+        #Allianz
+        returnMsg += "{0:30}{1}\n".format(self._fields[2].capitalize(),userData[0][1])
+        #gesamt
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[3].capitalize(),str(userData[0][2]), str(userData[1][2]-userData[0][2]))
+        #flotte
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[4].capitalize(),str(userData[0][3]), str(userData[1][3]-userData[0][3]))
+        #defensive
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[5].capitalize(),str(userData[0][4]), str(userData[1][4]-userData[0][4]))
+        #gebäude
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[6].capitalize(),str(userData[0][5]), str(userData[1][5]-userData[0][5]))
+        #forschung
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[7].capitalize(),str(userData[0][6]), str(userData[1][6]-userData[0][6]))
         
         #addPlanetData
         userplanets = self._db.get_playerplanets(username)

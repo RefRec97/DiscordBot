@@ -77,8 +77,7 @@ class Utils(commands.Cog):
         user = str(ctx.author)
         command = str(ctx.command)
         args = " ".join(str(x) for x in ctx.kwargs.values())
-
-        logChannel = self.bot.get_channel(int(os.getenv("LOGCHANNEL")))
+        logChannel = self.bot.get_channel(int("987732014692171827"))
         
         returnStr = "```{},{},{},{}```".format(server,user,command,args)
         await logChannel.send(returnStr)
