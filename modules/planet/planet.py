@@ -1,29 +1,37 @@
 import inspect
 import logging
 import re
-from discord.ext import commands
 
 from utils.authHandler import AuthHandler
 import utils.db as Database
+import interactions
 
-class Planet(commands.Cog):
-    def __init__(self, bot: commands.bot):
-        self._bot: commands.bot = bot
+class Planet(interactions.Extension):
+    def __init__(self, bot: interactions.Client):
+        self.bot: interactions.Client = bot
         self._planetData: dict = {}
         self._db = Database.db()
 
-    @commands.command(usage="<g>:<s>:<p>,<username>",
-                      brief="Speichert einen neuen Planeten",
-                      help="Speichert den Planet an position <g>:<s>:<p> zu dem spieler <username> ab")
-    @commands.check(AuthHandler.instance().check)
-    async def addPlanet(self, ctx: commands.context, *, argumente):
-        argumente = argumente.lower()
-        if "," in argumente:
-            position = argumente.split(',')[0]
-            username = argumente.split(',')[1]
-        else:
-            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
-
+    @interactions.extension_command(
+        name="add_planet",
+        description="Speichert einen neuen Planeten",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="position",
+                description="position im format <g>:<s>:<p>",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def add_planet(self, ctx: interactions.CommandContext, *, username, position):
+        
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
             galaxy = result.group(1)
@@ -35,7 +43,7 @@ class Planet(commands.Cog):
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
-        
+        await ctx.defer()
         id = self._db.get_id(username)
         if self._db.check_planets(galaxy, system, location):
             await ctx.send('Planet bereits gespeichert')
@@ -46,18 +54,26 @@ class Planet(commands.Cog):
 
         await ctx.send('Planet gespeichert')
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<g>:<s>:<p>,<username>",
-                      brief="Löscht einen Planeten",
-                      help="Löscht den Planet an position <g>:<s>:<p> von dem spieler <username>")
-    async def delPlanet(self, ctx: commands.context, *, argumente):
-        argumente = argumente.lower()
-        if "," in argumente:
-            position = argumente.split(',')[0]
-            username = argumente.split(',')[1]
-        else:
-            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
-
+    @interactions.extension_command(
+        name="del_planet",
+        description="Löscht einen Planeten",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="position",
+                description="position im format <g>:<s>:<p>",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def del_planet(self, ctx: interactions.CommandContext, *, username, position):
+        
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
@@ -69,7 +85,7 @@ class Planet(commands.Cog):
         except:
             await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delPlanet 1:1:1,Sc0t')
             return
-
+        await ctx.defer()
         id = self._db.get_id(username)
         if not self._db.check_planets(galaxy, system, location):
             await ctx.send('Planet nicht vorhanden')
@@ -80,17 +96,25 @@ class Planet(commands.Cog):
         
         await ctx.send('Planet gelöscht')
 
-    @commands.command(usage="<g>:<s>:<p>,<username>",
-                      brief="Speichert einen neuen Mond",
-                      help="Speichert den Mond an position <g>:<s>:<p> zu dem spieler <username> ab")
-    @commands.check(AuthHandler.instance().check)
-    async def addMoon(self, ctx: commands.context, *, argumente):
-        argumente = argumente.lower()
-        if "," in argumente:
-            position = argumente.split(',')[0]
-            username = argumente.split(',')[1]
-        else:
-            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
+    @interactions.extension_command(
+        name="add_moon",
+        description="Speichert einen neuen Mond",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="position",
+                description="position im format <g>:<s>:<p>",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def add_moon(self, ctx: interactions.CommandContext, *, username, position):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
@@ -103,7 +127,7 @@ class Planet(commands.Cog):
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
-        
+        await ctx.defer()
         id = self._db.get_id(username)
         if not self._db.check_planets(galaxy, system, location):
             await ctx.send('Kein Planet auf der Position')
@@ -117,17 +141,25 @@ class Planet(commands.Cog):
 
         await ctx.send('Mond gespeichert')
     
-    @commands.command(usage="<g>:<s>:<p>,<username>",
-                      brief="Löscht einen Mond",
-                      help="Löscht den Mond an position <g>:<s>:<p> von dem spieler <username>")
-    @commands.check(AuthHandler.instance().check)
-    async def delMoon(self, ctx: commands.context, *, argumente):
-        argumente = argumente.lower()
-        if "," in argumente:
-            position = argumente.split(',')[0]
-            username = argumente.split(',')[1]
-        else:
-            raise commands.MissingRequiredArgument(param=inspect.Parameter("username",inspect._ParameterKind.VAR_POSITIONAL))
+    @interactions.extension_command(
+        name="del_moon",
+        description="Löscht einen Mond",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="position",
+                description="position im format <g>:<s>:<p>",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def del_moon(self, ctx: interactions.CommandContext, *, username, position):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
@@ -140,7 +172,7 @@ class Planet(commands.Cog):
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
-        
+        await ctx.defer()
         id = self._db.get_id(username)
         if not self._db.check_planets(galaxy, system, location):
             await ctx.send('Kein Planet auf der Position')
@@ -155,7 +187,7 @@ class Planet(commands.Cog):
         await ctx.send('Mond gelöscht')
 
 
-    @addPlanet.error
+    #@addPlanet.error
     async def addPlanet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !addPlanet 1:1:1,Sc0t')
@@ -165,7 +197,7 @@ class Planet(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @delPlanet.error
+    #@delPlanet.error
     async def delPlanet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !delPlanet 1:1:1,Sc0t')
@@ -175,7 +207,7 @@ class Planet(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @addMoon.error
+    #@addMoon.error
     async def addMoon_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !addMoon 1:1:1,Sc0t')
@@ -185,7 +217,7 @@ class Planet(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @delMoon.error
+    #@delMoon.error
     async def delMoon_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !delMoon 1:1:1,Sc0t')
@@ -195,5 +227,5 @@ class Planet(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Planet(bot))
+def setup(bot: interactions.Client):
+    Planet(bot)

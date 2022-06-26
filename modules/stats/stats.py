@@ -1,15 +1,16 @@
 from ast import arg
+from email.policy import default
 import logging
-from discord.ext import commands
 from h11 import Data
 from quickchart import QuickChart
 import utils.db as Database
 from utils.authHandler import AuthHandler
 import utils.playerData
+import interactions
 
-class Stats(commands.Cog):
-    def __init__(self, bot: commands.bot):
-        self._bot: commands.bot = bot
+class Stats(interactions.Extension):
+    def __init__(self, bot: interactions.Client):
+        self.bot: interactions.Client = bot
         self._fields = ["username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
         self._db = Database.db()
         self._playerData = utils.playerData.PlayerData.instance()
@@ -17,39 +18,68 @@ class Stats(commands.Cog):
         
         self.setup()
     
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<username>",
-                      brief="Zeigt die Werte des Spielers an",
-                      help="Zeigt die Werte des Spielers <username> an")
-    async def stats(self, ctx: commands.context, *,username):
+    @interactions.extension_command(
+        name="stats",
+        description="zeigt die statistiken des spielers an",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def stats(self, ctx: interactions.CommandContext, *,username):
         username = username.lower()
+        await ctx.defer()
         await ctx.send(self._getStatsString(username))
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<username>",
-                      brief="Zeigt die History des Spielers an",
-                      help="Zeigt die History der letzen 7 Tage des Spielers <username> an")
-    async def history(self, ctx: commands.context, *,username):
+    @interactions.extension_command(
+        name="history",
+        description="zeigt die history des spielers an",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def history(self, ctx: interactions.CommandContext, *,username):
         username = username.lower()
+        await ctx.defer()
         await ctx.send(self._getHistoryString(username))
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<username>,[size]",
-                      brief="Zeigt ein Diagramm an",
-                      help="Zeigt ein Diagramm für den User <username> an. Die größe wird über den optionalen " +
-                           "parameter [size] angepasst. Mögliche größen sind: S, M, L, XL (default: M)")
-    async def chart(self, ctx: commands.context, *,argumente):
-        argumente = argumente.lower()
-        if "," in argumente:
-            username = argumente.split(',')[0]
-            size = argumente.split(',')[1]
-        else:
-            username = argumente.split(',')[0]
-            size = 'm'
-        
+    @interactions.extension_command(
+        name="chart",
+        description="zeigt die statistiken des spielers an",
+        options = [
+            interactions.Option(
+                name="username",
+                description="username des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="size",
+                description="size of chart, default m",
+                type=interactions.OptionType.STRING,
+                required=False,
+                choices=[
+                    interactions.Choice(name="s", value="s"), 
+                    interactions.Choice(name="m", value="m"),
+                    interactions.Choice(name="l", value="l"), 
+                    interactions.Choice(name="xl", value="xl"),
+                ],
+            ),
+        ],
+    )
+    async def chart(self, ctx: interactions.CommandContext, *,username, size="m"):        
         if not self._db.check_player(username):
             return "Nutzer nicht gefunden"
-
+        await ctx.defer()
         data = self._db.get_player_chart_history(username)
         chartData = self._playerData.build_chart_dict(data)
         
@@ -59,20 +89,20 @@ class Stats(commands.Cog):
         
         await ctx.send(returnMsg)
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<galaxy>",
-                      brief="Zeigt ein potentiell Inaktive Spieler an",
-                      help="Zeigt alle Spieler in Galaxy <galaxy> and, die potentiell Inaktiv "+
-                           "sind. (min. 3 tage kein Punktewachstum). Spieler im urlaubsmodus " +
-                           "werden leider mit augelisted")
-    async def inactive(self, ctx: commands.context, galaxy: int):
+    #@commands.command(usage="<galaxy>",
+    #                  brief="Zeigt ein potentiell Inaktive Spieler an",
+    #                  help="Zeigt alle Spieler in Galaxy <galaxy> and, die potentiell Inaktiv "+
+    #                       "sind. (min. 3 tage kein Punktewachstum). Spieler im urlaubsmodus " +
+    #                       "werden leider mit augelisted")
+    async def inactive(self, ctx: interactions.CommandContext, galaxy: int):
         if galaxy <1 or galaxy>9:
             return ctx.send("Galaxy muss zwischen 1 und 9 sein")
 
         #await ctx.send(self._getInactiveString(galaxy))
+        await ctx.defer()
         await ctx.send("currently under construction")
 
-    @stats.error
+    #@stats.error
     async def stats_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Spielername fehlt!\nBsp.: !stats Sc0t')
@@ -82,7 +112,7 @@ class Stats(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @history.error
+    #@history.error
     async def history_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Spielername fehlt!\nBsp.: !history Sc0t')
@@ -92,7 +122,7 @@ class Stats(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @chart.error
+    #@chart.error
     async def chart_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Spielername fehlt!\nBsp.: !chart Sc0t')
@@ -102,7 +132,7 @@ class Stats(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
-    @inactive.error
+    #@inactive.error
     async def inactive_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Galaxy fehlt!\nBsp.: !inactive 1')
@@ -279,8 +309,10 @@ class Stats(commands.Cog):
         return returnMsg + "```"
 
     def _getStatsString(self, username):
+        
         if not self._db.check_player:
             return "Nutzer nicht gefunden"
+        
         userData = self._db.get_player_stats(username)
         #"username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"
         returnMsg = "```"
@@ -314,5 +346,5 @@ class Stats(commands.Cog):
         
         return returnMsg + "```"
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Stats(bot))
+def setup(bot: interactions.Client):
+    Stats(bot)

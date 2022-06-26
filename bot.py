@@ -1,6 +1,9 @@
 from discord.ext import commands
 import os
 import logging
+import interactions
+from interactions import Intents
+
 
 import utils.config as config
 from modules import *
@@ -12,18 +15,18 @@ def main():
     logging.info("Programm started")
 
     client = commands.Bot(command_prefix="!", case_insensitive=True)
-    
-    #Initialize Singeltons
-    #playerData = PlayerData.instance()
+    bot = interactions.Client(token=config.token, intents=Intents.DEFAULT | Intents.GUILD_MESSAGE_CONTENT)
     autHandler = AuthHandler.instance()
-    autHandler.addBot(client)
+    autHandler.addBot(bot)
 
     for name in os.listdir(os.path.join(os.path.abspath(os.getcwd()),"modules")):
         if os.path.exists(os.path.join("modules", name)):
-            client.load_extension(f"modules.{name}.{name}")
+            bot.load(f"modules.{name}.{name}")
             logging.info(f"Bot: Module {name} loaded")
 
-    client.run(config.token)
+    #client.run()
+    bot.load("modules.utils.utils")
+    bot.start()
 
 if __name__ == '__main__':
     main()

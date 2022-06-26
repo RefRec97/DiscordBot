@@ -1,39 +1,49 @@
 import logging
 import datetime
-from discord.ext import commands
 from utils.authHandler import AuthHandler
 import utils.db as Database
+import interactions
 
-class Status(commands.Cog):
-    def __init__(self, bot: commands.bot):
-        self.bot = bot
+class Status(interactions.Extension):
+    def __init__(self, bot: interactions.Client):
+        self.bot: interactions.Client = bot
         self.lastUpdate = "N/A"
         self._db = Database.db()
     
-    @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def test(self, ctx: commands.context):
+    @interactions.extension_command(
+        name="test",
+        description="Pingt den Bot"
+    )
+    async def test(self, ctx: interactions.CommandContext):
         """Antwortet mit \"Test Bestanden\" (Verbindungstest)"""
         await ctx.send('Test bestanden')
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def status(self, ctx: commands.context):
-        lastUpdate = self._db.check_time(datetime.date.today())
+    @interactions.extension_command(
+        name="status",
+        description="Stand des Datensatzes"
+    )
+    async def status(self, ctx: interactions.CommandContext):
+        if datetime.datetime.now().hour > 12 and datetime.datetime.now().minute > 30:
+            lastUpdate = self._db.check_time(datetime.date.today())
+        elif datetime.datetime.now().hour > 13:
+            lastUpdate = self._db.check_time(datetime.date.today())
+        else:
+            lastUpdate = self._db.check_time(datetime.date.today() - datetime.timedelta(days=1))
+
         """Stand des Datensatzes"""
         await ctx.send(f"Letztes Update: {lastUpdate}")
 
-    @test.error
+    #@test.error
     async def test_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
+        if isinstance(error, interactions.CommandContext):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @status.error
+    #@status.error
     async def status_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
+        if isinstance(error, interactions.CommandContext):
             await ctx.send('Keine rechte diesen Befehl zu nutzen')
         else:
             logging.error(error)
@@ -41,5 +51,5 @@ class Status(commands.Cog):
     
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Status(bot))
+def setup(bot: interactions.Client):
+    Status(bot)

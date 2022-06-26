@@ -1,50 +1,68 @@
 import logging
 import inspect
-from discord.ext import commands
 import utils.db as Database
 from utils.authHandler import AuthHandler
+import interactions
 
-class Allianz(commands.Cog):
-    def __init__(self, bot: commands.bot):
-        self._bot: commands.bot = bot
+class Allianz(interactions.Extension):
+    def __init__(self, bot: interactions.Client):
+        self.bot: interactions.Client = bot
         self._allianzData: dict = {}
         self._topAllianzData: dict = {}
         self._db = Database.db()
 
         self.setup()
     
-    @commands.check(AuthHandler.instance().check)
-    @commands.command()
-    async def allianz(self, ctx: commands.context, *,allianzName):
+    @interactions.extension_command(
+        name="allianz",
+        description="Zeigt die Top 10 Spieler der Allianz an",
+        options = [
+            interactions.Option(
+                name="allianz_name",
+                description="name der Allianz",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def allianz(self, ctx: interactions.CommandContext, *,allianz_name):
         """Zeigt die Top 10 Spieler der Allianz <allianzname> an"""
-        allianzName = allianzName.lower()
+        allianz_name = allianz_name.lower()
 
-        if not self._db.check_ally(allianzName):
+        if not self._db.check_ally(allianz_name):
             await ctx.send('Allianzname nicht gefunden')
             return
 
-        await ctx.send(self._getAllianzString(allianzName))
+        await ctx.send(self._getAllianzString(allianz_name))
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<allianzname>,<galaxy>",
-                      brief="Zeigt alle Planeten der Allianz in einer Galaxy an",
-                      help="Zeigt alle Planeten der Allianz <allianzname> in einer Galaxy <galaxy> an.")
-    async def allianzPosition(self, ctx: commands.context, *,argumente):
-        argumente = argumente.lower()
-        if "," in argumente:
-            allianzName = argumente.split(',')[0]
-            galaxy = argumente.split(',')[1]
-        else:
-            raise commands.MissingRequiredArgument(param=inspect.Parameter("galaxy",inspect._ParameterKind.VAR_POSITIONAL))
+    @interactions.extension_command(
+        name="allianz_position",
+        description="Zeigt alle Planeten der Allianz in einer Galaxy an",
+        options = [
+            interactions.Option(
+                name="allianz_name",
+                description="name der Allianz",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="galaxy",
+                description="galaxy der Planeten",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def allianz_position(self, ctx: interactions.CommandContext, *,allianz_name, galaxy):
         
-        if not self._db.check_ally(allianzName):
+        if not self._db.check_ally(allianz_name):
             await ctx.send('Allianzname nicht gefunden')
             return
         
 
-        await ctx.send(self._getAllianzPosString(allianzName, galaxy))
+        await ctx.send(self._getAllianzPosString(allianz_name, galaxy))
 
-    @allianz.error
+    #@allianz.error
     async def allianz_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Allianzname fehlt!\nBsp.: !allianz Allianz mit Poll')
@@ -54,7 +72,7 @@ class Allianz(commands.Cog):
             logging.error(error)
             await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    @allianzPosition.error
+    #@allianzPosition.error
     async def allianzPosition_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Fehlende Argumente!\nBsp.: !allianzPosition Allianz mit Poll,3')
@@ -113,5 +131,5 @@ class Allianz(commands.Cog):
                                                                 topally['p'+str(i)]["fleetScore"])
         return returnMsg + "```"
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Allianz(bot))
+def setup(bot: interactions.Client):
+    Allianz(bot)

@@ -1,35 +1,48 @@
-from discord.ext import commands
 import re
 import os
 import logging
+import interactions
+import utils.config as config
+from interactions.ext.get import get
 
 from utils.authHandler import AuthHandler
 
-class Utils(commands.Cog):
-    def __init__(self, bot: commands.bot):
-        self.bot = bot
-        self.lastUpdate = "N/A"
-    
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(usage="<g>:<s>",
-                      brief="Erzeugt ein Link auf die Position",
-                      help="Erzeugt ein Link der die Position <g>:<s> in der Galaxyansicht führt")
-    async def link(self, ctx: commands.context, position: str):
+class Utils(interactions.Extension):
+    def __init__(self, bot: interactions.Client):
+        #self.bot = bot
+        self.bot: interactions.Client = bot
+
+    @interactions.extension_command(
+        name="link",
+        description="Erzeugt ein Link der die Position <g>:<s> in der Galaxyansicht führt",
+        options = [
+            interactions.Option(
+                name="position",
+                description="gala_sys",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def link(self, ctx: interactions.CommandContext, position: str):
         position = position.lower()
         try:
             result = re.search("^(\d):(\d{1,3})$",position)
             galaxy = result.group(1)
             system = result.group(2)
         except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !link 1:1')
+            await ctx.send('Position konnte nicht geparst werden\nz.B.: !link 1:1')
             return
-        
-        await ctx.send(f'https://pr0game.com/game.php?page=galaxy&galaxy={galaxy}&system={system}')
+        if AuthHandler.instance().check(ctx.author):
+            await ctx.send(f'https://pr0game.com/game.php?page=galaxy&galaxy={galaxy}&system={system}')
+        else:
+            await ctx.send('not authorized')
 
-    @commands.check(AuthHandler.instance().check)
-    @commands.command(brief="Zeigt eine NICHT geordnete liste der geplanten updates",
-                      help="Zeigt eine NICHT geordnete liste der geplanten updates.")
-    async def features(self, ctx: commands.context):
+    @interactions.extension_command(
+        name="features",
+        description="Zeigt geplante Features"
+    )
+    async def features(self, ctx: interactions.CommandContext):
         featureList: list = [
             "```"
             "Monde:",
@@ -49,38 +62,28 @@ class Utils(commands.Cog):
         ]
         await ctx.send("\n".join(featureList))
    
-    @link.error
-    async def link_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlendes Argument!\nBsp.: !link 1:1')
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.send('Keine rechte diesen Befehl zu nutzen')
-        else:
-            logging.error(error)
-            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
-    
-    @features.error
-    async def features_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send('Keine rechte diesen Befehl zu nutzen')
-        else:
-            logging.error(error)
-            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
-
-    
-    @commands.Cog.listener(name='on_command')
-    async def log(self, ctx):
-        if ctx.guild:
-            server = str(ctx.guild.name)
+    #@commands.Cog.listener(name='on_command')
+    @interactions.extension_listener(name='on_command')
+    async def log(self, ctx: interactions.CommandContext):
+        if ctx.guild_id:
+            server = await ctx.get_guild() #ctx.guild_id._snowflake
         else:
             server = "private"
-        user = str(ctx.author)
-        command = str(ctx.command)
-        args = " ".join(str(x) for x in ctx.kwargs.values())
-        logChannel = self.bot.get_channel(int("987732014692171827"))
+        #ctx.get_guild
+        user = str(ctx.user.username)
+        command = str(ctx.data.name)
+        args = []
+        options = ctx.data.options
+        if options:
+            for option in options:
+                args.append(option.value)
         
-        returnStr = "```{},{},{},{}```".format(server,user,command,args)
-        await logChannel.send(returnStr)
+        channel = await get(self.bot, interactions.Channel, channel_id=987732014692171827)
+        
+        returnStr = "```{},{},{},{}```".format(server,user,command, args)
+        await channel.send(returnStr)
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Utils(bot))
+def setup(bot: interactions.Client):
+    #bot.add_cog(Utils(bot))
+    Utils(bot)
+
