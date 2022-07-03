@@ -4,8 +4,8 @@ import logging
 import interactions
 from interactions import Intents
 
-
-import utils.config as config
+#utils.config ist eine Klasse, die die Konfiguration enthält, sie liegt im utils ordner und heißt config.py
+import utils.discord_bot_configuration_file as config
 from modules import *
 from utils.authHandler import AuthHandler
 #from utils.playerData import PlayerData

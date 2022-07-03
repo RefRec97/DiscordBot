@@ -2,7 +2,6 @@ import re
 import os
 import logging
 import interactions
-import utils.config as config
 from interactions.ext.get import get
 
 from utils.authHandler import AuthHandler

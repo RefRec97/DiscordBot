@@ -130,3 +130,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+init_environment_variables.py
+utils/discord_bot_configuration_file.py
+.vscode/launch.json

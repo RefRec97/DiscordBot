@@ -1,5 +1,5 @@
 import mysql.connector
-import utils.config as config
+import utils.discord_bot_configuration_file as config
 import datetime
 class db:
     def __init__(self):
