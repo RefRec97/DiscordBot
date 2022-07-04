@@ -1,9 +1,7 @@
 from discord.ext import commands
 import logging
-import utils.db as Database
-
-from utils.singleton import Singleton
-
+import db as Database
+from singleton import Singleton
 
 @Singleton
 class AuthHandler:
@@ -26,7 +24,7 @@ class AuthHandler:
         #author = "n0sleep#9106"
         command = str(ctx.command).lower()
         role = self._db.check_auth(author)
-        
+
         #check for groups
         if command == "auth":
             if role in self._modrights:
@@ -37,14 +35,14 @@ class AuthHandler:
             else:
                 return False
     
-    def add(self, user: str , field: str):
+    def add(self, user: str, field: str):
         if field in self._userrights:
             self._db.add_auth(user, field)
             return True
         else:
             return False
 
-    def update(self, user: str , field: str):
+    def update(self, user: str, field: str):
         if field in self._userrights:
             self._db.update_auth(user, field)
             return True
