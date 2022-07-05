@@ -4,24 +4,27 @@ from bot_utils.authHandler import AuthHandler
 import interactions
 from interactions import Intents
 
+#import subprocess
+#subprocess.run('python install_packages.py')
 
 def main():
     logging.basicConfig(level=logging.INFO)
     logging.info("Programm started")
     bot = interactions.Client(token=os.getenv('vvj_token'), intents=Intents.DEFAULT | Intents.GUILD_MESSAGE_CONTENT)
 
-    authHandler = AuthHandler.instance()
-    authHandler.addBot(bot)
+    #authHandler = AuthHandler.instance()
+    #authHandler.addBot(bot)
 
     current_workdir = os.path.abspath(os.getcwd())
     modules_path = os.path.join(current_workdir, "modules")
-    for name in os.listdir(modules_path):
-        if os.path.isfile(name):
-            logging.error(name)
-            bot.load(f"modules.{name}")
-            logging.info(f"Bot: Module {name} loaded")
 
-    bot.load("modules.tools")
+    for name in os.listdir(modules_path):
+        search = os.path.join(modules_path, name)
+        if os.path.isfile(search):
+            module_name = os.path.splitext(name)[0]
+            bot.load(f"modules.{module_name}")
+            logging.info(f"Bot: Module {module_name} loaded")
+
     bot.start()
 
 

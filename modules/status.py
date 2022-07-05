@@ -1,14 +1,14 @@
 import logging
 import datetime
-from utils.authHandler import AuthHandler
-import utils.db as Database
+from DiscordBot.bot_utils.authHandler import AuthHandler
+from DiscordBot.bot_utils.db import DataBase
 import interactions
 
 class Status(interactions.Extension):
     def __init__(self, bot: interactions.Client):
         self.bot: interactions.Client = bot
         self.lastUpdate = "N/A"
-        self._db = Database.db()
+        self._db = DataBase()
     
     @interactions.extension_command(
         name="test",

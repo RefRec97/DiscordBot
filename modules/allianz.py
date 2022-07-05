@@ -9,7 +9,7 @@ class Allianz(interactions.Extension):
         self.bot: interactions.Client = bot
         self._allianzData: dict = {}
         self._topAllianzData: dict = {}
-        self._db = DataBase.db()
+        self._db = DataBase()
 
         self.setup()
     

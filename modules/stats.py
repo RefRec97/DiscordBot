@@ -3,17 +3,17 @@ from email.policy import default
 import logging
 from h11 import Data
 from quickchart import QuickChart
-import utils.db as Database
-from utils.authHandler import AuthHandler
-import utils.playerData
+from DiscordBot.bot_utils.db import DataBase
+from DiscordBot.bot_utils.authHandler import AuthHandler
+from DiscordBot.bot_utils.playerData import PlayerData
 import interactions
 
 class Stats(interactions.Extension):
     def __init__(self, bot: interactions.Client):
         self.bot: interactions.Client = bot
         self._fields = ["username", "platz", "allianz", "gesamt", "flotte", "defensive", "gebäude", "forschung"]
-        self._db = Database.db()
-        self._playerData = utils.playerData.PlayerData.instance()
+        self._db = DataBase()
+        self._playerData = PlayerData.instance()
 
         
         self.setup()

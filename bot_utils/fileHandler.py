@@ -6,8 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-from utils.singleton import Singleton
-from utils.myData import MyData
+from DiscordBot.bot_utils.singleton import Singleton
+from DiscordBot.bot_utils.myData import MyData
 
 @Singleton
 class FileHandler:
