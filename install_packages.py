@@ -1,13 +1,23 @@
 import subprocess
 
-interactions = subprocess.Popen(['python' ,'install_interactions.py'])
-interactions.wait()
 
-interactions_get = subprocess.Popen(['python' ,'install_interactions_get.py'])
-interactions_get.wait()
+def install_interactions():
+    subprocess.check_call('pip install --user discord-py-interactions')
 
-mysql = subprocess.Popen(['python' ,'install_mysql_connector.py'])
-mysql.wait()
 
-quickchart = subprocess.Popen(['python' ,'install_quickchart.py'])
-quickchart.wait()
+def install_interactions_get():
+    subprocess.check_call('pip install --user interactions-get')
+
+
+def install_mysql_connector():
+    subprocess.check_call('pip install mysql-connector-python')
+
+
+def install_quickchart():
+    subprocess.check_call('pip install quickchart-io')
+
+
+install_interactions()
+install_interactions_get()
+install_mysql_connector()
+install_quickchart()

@@ -1,23 +1,19 @@
 import os
-import subprocess
-try:
-    import mysql.connector
-except ModuleNotFoundError:
-    subprocess.run('pip install mysql-connector-python')
-    import mysql.connector
-
+import mysql.connector
 import datetime
-class db:
+
+
+class DataBase:
     def __init__(self):
         # Creating connection object
-        a = "a"
+        self.mydb = None
     
     def setup(self):
         self.mydb = mysql.connector.connect(
-            host = os.getenv('dbRemoteIP'),
-            user = os.getenv('dbUsername'),
-            password = os.getenv('dbPassword'),
-            database = os.getenv('dbSchema')
+            host=os.getenv('database_ip'),
+            user=os.getenv('database_user'),
+            password=os.getenv('database_password'),
+            database=os.getenv('database_schema')
         )
     
     def teardown(self):

@@ -1,20 +1,20 @@
 from discord.ext import commands
-import logging
-import db as Database
-from singleton import Singleton
+from DiscordBot.bot_utils.singleton import Singleton
+from DiscordBot.bot_utils.db import DataBase
+
 
 @Singleton
 class AuthHandler:
     def __init__(self):
         self._bot: commands.bot = None
         self._groups: list = []
-        self._db = Database.db()
+        self._db = DataBase()
         self._adminrights = ['admin']
         self._modrights = ['admin', 'mod']
         self._userrights = ['admin', 'mod', 'user']
         self._admincommands = []
         self._modcommands = ['auth', 'addUpdate']
-    
+
     def addBot(self, bot: commands.bot):
         self._bot = bot
 
@@ -51,5 +51,6 @@ class AuthHandler:
 
     def remove(self, user: str):
         self._db.delete_auth(user)
+
         #todo: check if successful deauth
         return True

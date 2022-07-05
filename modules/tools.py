@@ -2,7 +2,7 @@ import re
 import interactions
 from interactions.ext.get import get
 
-from utils.authHandler import AuthHandler
+from DiscordBot.bot_utils.authHandler import AuthHandler
 
 class Tools(interactions.Extension):
     def __init__(self, bot: interactions.Client):
@@ -28,10 +28,10 @@ class Tools(interactions.Extension):
         except:
             await ctx.send('Position konnte nicht geparst werden\nz.B.: !link 1:1')
             return
-        if AuthHandler.instance().check(ctx.author):
-            await ctx.send(f'https://pr0game.com/game.php?page=galaxy&galaxy={galaxy}&system={system}')
-        else:
-            await ctx.send('not authorized')
+        #if AuthHandler.instance().check(ctx.author):
+        await ctx.send(f'https://pr0game.com/game.php?page=galaxy&galaxy={galaxy}&system={system}')
+        #else:
+        #    await ctx.send('not authorized')
 
 
     @interactions.extension_command(
