@@ -2,7 +2,7 @@ import logging
 import inspect
 
 import interactions
-from utils.authHandler import AuthHandler
+from DiscordBot.bot_utils.authHandler import AuthHandler
 
 class Authentication(interactions.Extension):
     def __init__(self, bot: interactions.Client):

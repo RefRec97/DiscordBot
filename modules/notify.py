@@ -1,16 +1,17 @@
 
 import logging
 import interactions
-from h11 import Data
-import utils.db as Database
-from utils.authHandler import AuthHandler
 from interactions.ext.get import get
+from h11 import Data
+from DiscordBot.bot_utils.db import DataBase
+from DiscordBot.bot_utils.authHandler import AuthHandler
+
 
 class Notify(interactions.Extension):
     def __init__(self, bot: interactions.Client):
         self.bot: interactions.Client = bot
         self._channels = {}
-        self._db = Database.db()
+        self._db = DataBase()
     
     @interactions.extension_command(
         name="add_update",

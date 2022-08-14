@@ -2,15 +2,15 @@ import inspect
 import logging
 import re
 
-from utils.authHandler import AuthHandler
-import utils.db as Database
+from DiscordBot.bot_utils.authHandler import AuthHandler
+from DiscordBot.bot_utils.db import DataBase
 import interactions
 
 class Planet(interactions.Extension):
     def __init__(self, bot: interactions.Client):
         self.bot: interactions.Client = bot
         self._planetData: dict = {}
-        self._db = Database.db()
+        self._db = DataBase()
 
     @interactions.extension_command(
         name="add_planet",

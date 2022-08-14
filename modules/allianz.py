@@ -1,7 +1,7 @@
 import logging
 import inspect
-import utils.db as Database
-from utils.authHandler import AuthHandler
+from DiscordBot.bot_utils.db import DataBase
+from DiscordBot.bot_utils.authHandler import AuthHandler
 import interactions
 
 class Allianz(interactions.Extension):
@@ -9,7 +9,7 @@ class Allianz(interactions.Extension):
         self.bot: interactions.Client = bot
         self._allianzData: dict = {}
         self._topAllianzData: dict = {}
-        self._db = Database.db()
+        self._db = DataBase()
 
         self.setup()
     

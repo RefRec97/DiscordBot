@@ -1,6 +1,6 @@
 import logging
 
-from utils.singleton import Singleton
+from DiscordBot.bot_utils.singleton import Singleton
 
 
 @Singleton
@@ -10,7 +10,7 @@ class PlayerData:
     
     def build_chart_dict(self, data):
         result: dict = {}
-        result = {"date":[],"platz":[],"gesamt":[],"gebäude":[],"forschung":[],"flotte":[], "defensive":[]}
+        result = {"date": [], "platz": [], "gesamt": [], "gebäude":[], "forschung": [], "flotte": [], "defensive": []}
         for day in data:
             result["platz"].append(day[0])
             result["gesamt"].append(day[1])
@@ -26,6 +26,6 @@ class PlayerData:
         
         result = []
         for day in data:
-            row = {"date":str(day[4])[:-9],"platz":day[0],"gesamt":day[1],"gebäude":day[2],"flotte":day[3]}
+            row = {"date": str(day[4])[:-9], "platz": day[0], "gesamt": day[1], "gebäude": day[2], "flotte": day[3]}
             result.append(row)
         return result
