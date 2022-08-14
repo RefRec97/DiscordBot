@@ -34,7 +34,7 @@ class DataBase:
         self.teardown()
         return result
     
-    def get_player_history(self,player_name):
+    def get_player_history(self, player_name):
         
         self.setup()
         select_cursor = self.mydb.cursor(buffered=True)
@@ -92,6 +92,7 @@ class DataBase:
         select_cursor.close()
         self.teardown()
         return result
+
 
     def get_all_player_stats(self, delta: int):
         #get palyer stats for 2 dates to determine inactives
