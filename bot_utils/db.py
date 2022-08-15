@@ -2,6 +2,7 @@ import os
 import mysql.connector
 import datetime
 
+from bot_utils import bot_password_token_file as config
 
 class DataBase:
     def __init__(self):
@@ -9,13 +10,16 @@ class DataBase:
         self.mydb = None
     
     def setup(self):
-        self.mydb = mysql.connector.connect(
-            host=os.getenv('database_ip'),
-            user=os.getenv('database_user'),
-            password=os.getenv('database_password'),
-            database=os.getenv('database_schema')
-        )
-    
+        try:
+            self.mydb = mysql.connector.connect(
+                host=str(config.dbRemoteIP),
+                user=str(config.dbUsername),
+                password=str(config.dbPassword),
+                database=str(config.dbSchema)
+            )
+        except:
+            print("DB nicht gestartet")
+
     def teardown(self):
         self.mydb.close()
 

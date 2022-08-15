@@ -1,6 +1,6 @@
 from discord.ext import commands
-from DiscordBot.bot_utils.singleton import Singleton
-from DiscordBot.bot_utils.db import DataBase
+from bot_utils.singleton import Singleton
+from bot_utils.db import DataBase
 
 
 @Singleton

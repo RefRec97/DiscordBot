@@ -2,8 +2,8 @@ import inspect
 import logging
 import re
 
-from DiscordBot.bot_utils.authHandler import AuthHandler
-from DiscordBot.bot_utils.db import DataBase
+from bot_utils.authHandler import AuthHandler
+from bot_utils.db import DataBase
 import interactions
 
 class Planet(interactions.Extension):

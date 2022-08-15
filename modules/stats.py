@@ -3,9 +3,9 @@ from email.policy import default
 import logging
 from h11 import Data
 from quickchart import QuickChart
-from DiscordBot.bot_utils.db import DataBase
-from DiscordBot.bot_utils.authHandler import AuthHandler
-from DiscordBot.bot_utils.playerData import PlayerData
+from bot_utils.db import DataBase
+from bot_utils.authHandler import AuthHandler
+from bot_utils.playerData import PlayerData
 import interactions
 
 class Stats(interactions.Extension):

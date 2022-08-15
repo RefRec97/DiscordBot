@@ -1,6 +1,6 @@
 import logging
 
-from DiscordBot.bot_utils.singleton import Singleton
+from bot_utils.singleton import Singleton
 
 
 @Singleton

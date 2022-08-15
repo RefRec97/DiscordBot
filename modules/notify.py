@@ -3,8 +3,8 @@ import logging
 import interactions
 from interactions.ext.get import get
 from h11 import Data
-from DiscordBot.bot_utils.db import DataBase
-from DiscordBot.bot_utils.authHandler import AuthHandler
+from bot_utils.db import DataBase
+from bot_utils.authHandler import AuthHandler
 
 
 class Notify(interactions.Extension):

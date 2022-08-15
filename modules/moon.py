@@ -1,7 +1,7 @@
 from quickchart import QuickChart
 
-from DiscordBot.bot_utils.db import DataBase
-import DiscordBot.options.moon_options as moon_options
+from bot_utils.db import DataBase
+import options.moon_options as moon_options
 import interactions
 
 

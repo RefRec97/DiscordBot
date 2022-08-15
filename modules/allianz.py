@@ -1,7 +1,7 @@
 import logging
 import inspect
-from DiscordBot.bot_utils.db import DataBase
-from DiscordBot.bot_utils.authHandler import AuthHandler
+from bot_utils.db import DataBase
+from bot_utils.authHandler import AuthHandler
 import interactions
 
 class Allianz(interactions.Extension):

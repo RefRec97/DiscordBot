@@ -3,14 +3,15 @@ import logging
 from bot_utils.authHandler import AuthHandler
 import interactions
 from interactions import Intents
-
+from bot_utils import bot_password_token_file as config
 #import subprocess
 #subprocess.run('python install_packages.py')
 
 def main():
     logging.basicConfig(level=logging.INFO)
     logging.info("Programm started")
-    bot = interactions.Client(token=os.getenv('vvj_token'), intents=Intents.DEFAULT | Intents.GUILD_MESSAGE_CONTENT)
+
+    bot = interactions.Client(token=str(config.token), intents=Intents.DEFAULT | Intents.GUILD_MESSAGE_CONTENT)
 
     #authHandler = AuthHandler.instance()
     #authHandler.addBot(bot)

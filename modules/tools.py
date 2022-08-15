@@ -2,7 +2,7 @@ import re
 import interactions
 from interactions.ext.get import get
 
-from DiscordBot.bot_utils.authHandler import AuthHandler
+from bot_utils.authHandler import AuthHandler
 
 class Tools(interactions.Extension):
     def __init__(self, bot: interactions.Client):
