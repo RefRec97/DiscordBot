@@ -1,6 +1,12 @@
 #Scraped Files & Authorisation
 files/*.json
 
+.idea
+.idea/**
+
+.vs 
+.vs/**
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -133,5 +139,3 @@ dmypy.json
 init_environment_variables.py
 bot_utils/discord_bot_configuration_file.py
 .vscode/launch.json
-utils/discord_bot_configuration_file.py
-bot_utils/bot_password_token_file.py
