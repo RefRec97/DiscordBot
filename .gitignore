@@ -139,3 +139,4 @@ dmypy.json
 init_environment_variables.py
 bot_utils/discord_bot_configuration_file.py
 .vscode/launch.json
+bot_utils/bot_password_token_file.py
