@@ -319,19 +319,19 @@ class Stats(interactions.Extension):
         #name
         returnMsg += "{0:30}{1}\n".format(self._fields[0].capitalize(),username)
         #platz
-        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[1].capitalize(),str(userData[0][0]), str(userData[1][0]-userData[0][0]))
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[1].capitalize(),str(userData[1][0]), str(userData[1][0]-userData[0][0]))
         #Allianz
-        returnMsg += "{0:30}{1}\n".format(self._fields[2].capitalize(),userData[0][1])
+        returnMsg += "{0:30}{1}\n".format(self._fields[2].capitalize(),userData[1][1])
         #gesamt
-        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[3].capitalize(),str(userData[0][2]), str(userData[1][2]-userData[0][2]))
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[3].capitalize(),str(userData[1][2]), str(userData[1][2]-userData[0][2]))
         #flotte
-        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[4].capitalize(),str(userData[0][3]), str(userData[1][3]-userData[0][3]))
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[4].capitalize(),str(userData[1][3]), str(userData[1][3]-userData[0][3]))
         #defensive
-        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[5].capitalize(),str(userData[0][4]), str(userData[1][4]-userData[0][4]))
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[5].capitalize(),str(userData[1][4]), str(userData[1][4]-userData[0][4]))
         #gebäude
-        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[6].capitalize(),str(userData[0][5]), str(userData[1][5]-userData[0][5]))
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[6].capitalize(),str(userData[1][5]), str(userData[1][5]-userData[0][5]))
         #forschung
-        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[7].capitalize(),str(userData[0][6]), str(userData[1][6]-userData[0][6]))
+        returnMsg += "{0:30}{1:10} ({2})\n".format(self._fields[7].capitalize(),str(userData[1][6]), str(userData[1][6]-userData[0][6]))
         
         #addPlanetData
         userplanets = self._db.get_playerplanets(username)

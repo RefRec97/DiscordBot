@@ -23,9 +23,9 @@ class Status(interactions.Extension):
         description="Stand des Datensatzes"
     )
     async def status(self, ctx: interactions.CommandContext):
-        if datetime.datetime.now().hour > 12 and datetime.datetime.now().minute > 30:
+        if datetime.datetime.now().hour >= 12 and datetime.datetime.now().minute > 32:
             lastUpdate = self._db.check_time(datetime.date.today())
-        elif datetime.datetime.now().hour > 13:
+        elif datetime.datetime.now().hour >= 13:
             lastUpdate = self._db.check_time(datetime.date.today())
         else:
             lastUpdate = self._db.check_time(datetime.date.today() - datetime.timedelta(days=1))
