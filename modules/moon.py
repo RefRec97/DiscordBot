@@ -259,11 +259,7 @@ class Moon(interactions.Extension):
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
         
-    @interactions.extension_command(name="moon_data",
-                                    description="Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
-                                    options=moon_options.moon_data_options)
-    async def moon_data(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int, position: int):
-        await ctx.defer()
+    def create_moon_data(self, galaxy:int, solarsystem: int, position: int):
         db_result = Moon.get_moon(self, galaxy, solarsystem, position)
         result = ""
         if len(db_result) == 1:
@@ -284,8 +280,18 @@ class Moon(interactions.Extension):
             result = result + "Sprungtor-Level:\t**" + str(result_list[7]) + "**\n"
         else:
             result = "Keine Daten gefunden!"
+        return result
 
-        await ctx.send(str(result))
+    @interactions.extension_command(name="moon_data",
+                                    description="Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
+                                    options=moon_options.moon_data_options)
+    async def moon_data(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int, position: int):
+        await ctx.defer()
+        if(AuthHandler.instance().check(ctx)):
+            result = Moon.create_moon_data(self, galaxy, solarsystem, position)
+            await ctx.send(str(result))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
 
 def setup(bot: interactions.Client):
     Moon(bot)
