@@ -13,7 +13,7 @@ class AuthHandler:
         self._modrights = ['admin', 'mod']
         self._userrights = ['admin', 'mod', 'user']
         self._admincommands = []
-        self._modcommands = ['auth', 'addUpdate']
+        self._modcommands = ['auth', 'addUpdate', 'deauth', 'ban']
 
     def addBot(self, bot: commands.bot):
         self._bot = bot
@@ -25,7 +25,7 @@ class AuthHandler:
         role = self._db.check_auth(author)
 
         #check for groups
-        if command == "auth":
+        if command in self._modcommands:
             if role in self._modrights:
                 return True
         else:
