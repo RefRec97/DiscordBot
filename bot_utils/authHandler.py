@@ -19,10 +19,9 @@ class AuthHandler:
         self._bot = bot
 
     def check(self, ctx):
-        author = str(ctx.author).lower()
-        
-        #author = "n0sleep#9106"
-        command = str(ctx.command).lower()
+        author = str(ctx.user.username).lower()
+        author += '#' + ctx.user.discriminator
+        command = str(ctx.data.name).lower()
         role = self._db.check_auth(author)
 
         #check for groups

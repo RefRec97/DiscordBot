@@ -49,10 +49,13 @@ class Planet(interactions.Extension):
             await ctx.send('Planet bereits gespeichert')
             return
         else:
-            self._db.add_planet(galaxy, system, location, id)
+            if(AuthHandler.instance().check(ctx)):
+                self._db.add_planet(galaxy, system, location, id)
+                await ctx.send('Planet gespeichert')
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            
             #todo check for failure
-
-        await ctx.send('Planet gespeichert')
 
     @interactions.extension_command(
         name="del_planet",
@@ -91,10 +94,13 @@ class Planet(interactions.Extension):
             await ctx.send('Planet nicht vorhanden')
             return
         else:
-            self._db.del_planet(galaxy, system, location)
+            if(AuthHandler.instance().check(ctx)):
+                self._db.del_planet(galaxy, system, location)
+                await ctx.send('Planet gelöscht')
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            
             #todo: check for failure
-        
-        await ctx.send('Planet gelöscht')
 
     @interactions.extension_command(
         name="add_moon",
@@ -136,10 +142,13 @@ class Planet(interactions.Extension):
             await ctx.send('Mond bereits gespeichert')
             return
         else:
-            self._db.add_moon(galaxy, system, location, id)
+            if(AuthHandler.instance().check(ctx)):
+                self._db.add_moon(galaxy, system, location, id)
+                await ctx.send('Mond gespeichert')
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            
             #todo: check for failure
-
-        await ctx.send('Mond gespeichert')
     
     @interactions.extension_command(
         name="del_moon",
@@ -181,11 +190,13 @@ class Planet(interactions.Extension):
             await ctx.send('Mond bereits gelöscht')
             return
         else:
-            self._db.del_moon(galaxy, system, location)
+            if(AuthHandler.instance().check(ctx)):
+                self._db.del_moon(galaxy, system, location)
+                await ctx.send('Mond gelöscht')
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            
             #todo: check failure
-
-        await ctx.send('Mond gelöscht')
-
 
     #@addPlanet.error
     async def addPlanet_error(self, ctx, error):

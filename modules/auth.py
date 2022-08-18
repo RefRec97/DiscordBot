@@ -29,12 +29,15 @@ class Authentication(interactions.Extension):
     )
     async def auth(self, ctx: interactions.CommandContext, *,username, gruppe):
         #todo: add update logic
-        if self._auth.add(username, gruppe):
-            returnMsg = "Erfolgreich Authorisiert"
+        if(AuthHandler.instance().check(ctx)):
+            if self._auth.add(username, gruppe):
+                returnMsg = "Erfolgreich Authorisiert"
+            else:
+                returnMsg = "Authorisiorung fehlgeschlagen"
+            await ctx.send(returnMsg)
         else:
-            returnMsg = "Authorisiorung fehlgeschlagen"
-
-        await ctx.send(returnMsg)
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        
 
     @interactions.extension_command(
         name="deauth",
@@ -55,13 +58,14 @@ class Authentication(interactions.Extension):
         ],
     )
     async def deauth(self, ctx: interactions.CommandContext, *,username, gruppe):
-
-        if self._auth.remove(username, gruppe):
-            returnMsg = "Erfolgreich Deauthorisiert"
+        if(AuthHandler.instance().check(ctx)):
+            if self._auth.remove(username, gruppe):
+                returnMsg = "Erfolgreich Deauthorisiert"
+            else:
+                returnMsg = "Authorisiorung fehlgeschlagen"
+            await ctx.send(returnMsg)
         else:
-            returnMsg = "Deauthorisiorung fehlgeschlagen"
-
-        await ctx.send(returnMsg)
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
 
     @interactions.extension_command(
         name="ban",
@@ -76,15 +80,16 @@ class Authentication(interactions.Extension):
         ],
     )
     async def ban(self, ctx: interactions.CommandContext, *,username):
-        """Deauthorisiert Nutzer auf den Bot"""
         username = username.lower()
-       
-        if self._auth.remove(username):
-            returnMsg = "Bonk!"
+        if(AuthHandler.instance().check(ctx)):
+            if self._auth.remove(username):
+                returnMsg = "Bonk!"
+            else:
+                returnMsg = "Bonk hammer kaputt"
+            await ctx.send(returnMsg)
         else:
-            returnMsg = "Bonk hammer kaputt"
-
-        await ctx.send(returnMsg)
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        
 
     #@auth.error
     async def auth_error(self, ctx, error):

@@ -3,6 +3,7 @@ from email.policy import default
 import logging
 from h11 import Data
 from quickchart import QuickChart
+from bot_utils import authHandler
 from bot_utils.db import DataBase
 from bot_utils.authHandler import AuthHandler
 from bot_utils.playerData import PlayerData
@@ -33,7 +34,10 @@ class Stats(interactions.Extension):
     async def stats(self, ctx: interactions.CommandContext, *,username):
         username = username.lower()
         await ctx.defer()
-        await ctx.send(self._getStatsString(username))
+        if(AuthHandler.instance().check(ctx)):
+            await ctx.send(self._getStatsString(username))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
 
     @interactions.extension_command(
         name="history",
@@ -50,7 +54,11 @@ class Stats(interactions.Extension):
     async def history(self, ctx: interactions.CommandContext, *,username):
         username = username.lower()
         await ctx.defer()
-        await ctx.send(self._getHistoryString(username))
+        if(AuthHandler.instance().check(ctx)):
+            await ctx.send(self._getHistoryString(username))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        
 
     @interactions.extension_command(
         name="chart",
@@ -80,17 +88,17 @@ class Stats(interactions.Extension):
         if not self._db.check_player(username):
             return "Nutzer nicht gefunden"
         await ctx.defer()
-        data = self._db.get_player_chart_history(username)
-        chartData = self._playerData.build_chart_dict(data)
-        
-        
-        url = self._getChartURL(chartData, size)
-        returnMsg = url
-        
-        await ctx.send(returnMsg)
+        if(AuthHandler.instance().check(ctx)):
+            data = self._db.get_player_chart_history(username)
+            chartData = self._playerData.build_chart_dict(data)
+            url = self._getChartURL(chartData, size)
+            returnMsg = url
+            await ctx.send(returnMsg)
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
 
     #@commands.command(usage="<galaxy>",
-    #                  brief="Zeigt ein potentiell Inaktive Spieler an",
+    #                  brief="Zeigt potentiell Inaktive Spieler an",
     #                  help="Zeigt alle Spieler in Galaxy <galaxy> and, die potentiell Inaktiv "+
     #                       "sind. (min. 3 tage kein Punktewachstum). Spieler im urlaubsmodus " +
     #                       "werden leider mit augelisted")
@@ -100,7 +108,11 @@ class Stats(interactions.Extension):
 
         #await ctx.send(self._getInactiveString(galaxy))
         await ctx.defer()
-        await ctx.send("currently under construction")
+        if(AuthHandler.instance().check(ctx)):
+            await ctx.send("currently under construction")
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        
 
     #@stats.error
     async def stats_error(self, ctx, error):

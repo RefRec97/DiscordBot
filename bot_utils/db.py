@@ -150,7 +150,11 @@ class DataBase:
         self.setup()
         cursor = self.mydb.cursor(buffered=True)
         cursor.execute('select role from auth where authUser = %s order by role desc;',(user,))
-        result = cursor.fetchone()[0]
+        row_count = cursor.rowcount
+        if row_count > 0:
+            result = cursor.fetchone()[0]
+        else:
+            result = False
         cursor.close()
         self.teardown()
         return result

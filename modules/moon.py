@@ -3,6 +3,7 @@ from quickchart import QuickChart
 from bot_utils.db import DataBase
 import options.moon_options as moon_options
 import interactions
+from bot_utils.authHandler import AuthHandler
 
 
 class Moon(interactions.Extension):
@@ -195,39 +196,43 @@ class Moon(interactions.Extension):
             await ctx.defer()
             await ctx.send("Maximal 200 Systeme als Bereich")
 
-        result = Moon.get_moons(self, galaxy)
-        entries = {}
-        for moon in result:
-            moon_entry = {"phalanx": int(moon[0]), "system": int(moon[1]), "position": moon[2], "playerId": moon[3],
-                          "allianceId": Moon.get_alliance_by_player(self, moon[3]),
-                          "is_friend": Moon.is_friend(self, Moon.get_alliance_by_player(self, moon[3]))}
-            entries[len(entries) + 1] = moon_entry
+        
+        if(AuthHandler.instance().check(ctx)):
+            result = Moon.get_moons(self, galaxy)
+            entries = {}
+            for moon in result:
+                moon_entry = {"phalanx": int(moon[0]), "system": int(moon[1]), "position": moon[2], "playerId": moon[3],
+                            "allianceId": Moon.get_alliance_by_player(self, moon[3]),
+                            "is_friend": Moon.is_friend(self, Moon.get_alliance_by_player(self, moon[3]))}
+                entries[len(entries) + 1] = moon_entry
 
-        chartData = Moon.initializeDataDict(self)
-        friends = chartData["friends"]
-        enemies = chartData["enemies"]
-        moons = chartData["moons"]
-        for index in range(len(entries)):
-            entry = entries[index + 1]
-            data = Moon.calculate_phalanx_systems(self, entry["system"], entry["phalanx"])
-            if entry["is_friend"]:
-                moons[int(entry["system"]) - 1] = int(entry["phalanx"])
-            else:
-                moons[int(entry["system"]) - 1] = -1 * int(entry["phalanx"])
-            for system in data:
+            chartData = Moon.initializeDataDict(self)
+            friends = chartData["friends"]
+            enemies = chartData["enemies"]
+            moons = chartData["moons"]
+            for index in range(len(entries)):
+                entry = entries[index + 1]
+                data = Moon.calculate_phalanx_systems(self, entry["system"], entry["phalanx"])
                 if entry["is_friend"]:
-                    friends[system - 1] = 1
+                    moons[int(entry["system"]) - 1] = int(entry["phalanx"])
                 else:
-                    enemies[system - 1] = -1
+                    moons[int(entry["system"]) - 1] = -1 * int(entry["phalanx"])
+                for system in data:
+                    if entry["is_friend"]:
+                        friends[system - 1] = 1
+                    else:
+                        enemies[system - 1] = -1
 
-        friends = [0 if v is None else v for v in friends]
-        enemies = [0 if v is None else v for v in enemies]
-        chartData["systems"] = chartData["systems"][start_system:end_system]
-        chartData["friends"] = friends[start_system:end_system]
-        chartData["enemies"] = enemies[start_system:end_system]
-        chartData["moons"] = moons[start_system:end_system]
-
-        await ctx.send(str(Moon.get_chart_url(self, chartData, 'xl')))
+            friends = [0 if v is None else v for v in friends]
+            enemies = [0 if v is None else v for v in enemies]
+            chartData["systems"] = chartData["systems"][start_system:end_system]
+            chartData["friends"] = friends[start_system:end_system]
+            chartData["enemies"] = enemies[start_system:end_system]
+            chartData["moons"] = moons[start_system:end_system]
+            await ctx.send(str(Moon.get_chart_url(self, chartData, 'xl')))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        
 
 
 def setup(bot: interactions.Client):

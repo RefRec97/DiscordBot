@@ -32,8 +32,11 @@ class Allianz(interactions.Extension):
         if not self._db.check_ally(allianz_name):
             await ctx.send('Allianzname nicht gefunden')
             return
-
-        await ctx.send(self._getAllianzString(allianz_name))
+        if(AuthHandler.instance().check(ctx)):
+            await ctx.send(self._getAllianzString(allianz_name))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        
 
     @interactions.extension_command(
         name="allianz_position",
@@ -58,9 +61,11 @@ class Allianz(interactions.Extension):
         if not self._db.check_ally(allianz_name):
             await ctx.send('Allianzname nicht gefunden')
             return
+        if(AuthHandler.instance().check(ctx)):
+            await ctx.send(self._getAllianzPosString(allianz_name, galaxy))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
         
-
-        await ctx.send(self._getAllianzPosString(allianz_name, galaxy))
 
     #@allianz.error
     async def allianz_error(self, ctx, error):
