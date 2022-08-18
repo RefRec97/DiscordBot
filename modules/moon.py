@@ -24,6 +24,19 @@ class Moon(interactions.Extension):
         self.db.teardown()
         return value
 
+    def get_moon(self, galaxy: int, solarsystem: int, position: int):
+
+        self.db.setup()
+        cursor = self.db.mydb.cursor()
+
+        moonQuery = "SELECT * FROM data.moons WHERE galaxy = " + str(galaxy) + " and solarsystem = " + str(solarsystem) + " and position = " + str(position)+ ";"
+        cursor.execute(moonQuery)
+        value = cursor.fetchall()
+        cursor.close()
+        self.db.mydb.commit()
+        self.db.teardown()
+        return value
+
     def get_moons(self, galaxy: int):
 
         self.db.setup()
@@ -38,6 +51,17 @@ class Moon(interactions.Extension):
         self.db.teardown()
         return value
 
+    def get_player_name(self, player_id: int):
+        self.db.setup()
+        cursor = self.db.mydb.cursor()
+
+        playerNameQuery = "SELECT name FROM data.players Where playerId =" + str(player_id) + ";"
+        cursor.execute(playerNameQuery)
+        value = cursor.fetchall()
+        cursor.close()
+        self.db.mydb.commit()
+        self.db.teardown()
+        return value
 
     def get_coalitions(self, alliance: str):
         self.db.setup()
@@ -187,17 +211,8 @@ class Moon(interactions.Extension):
         chartData["friends"] = friends
         return chartData
 
-    @interactions.extension_command(name="phalanx_map",
-                                    description="Zeigt die Phalanxgebiete in einem angegebenen Bereich an",
-                                    options=moon_options.phalanx_map_options)
-    async def phalanx_map(self, ctx: interactions.CommandContext, *, galaxy: int, start_system: int, end_system: int):
-        await ctx.defer()
-        if end_system - start_system > 200:
-            await ctx.defer()
-            await ctx.send("Maximal 200 Systeme als Bereich")
 
-        
-        if(AuthHandler.instance().check(ctx)):
+    def create_map(self, galaxy: int, start_system: int, end_system: int):
             result = Moon.get_moons(self, galaxy)
             entries = {}
             for moon in result:
@@ -229,11 +244,48 @@ class Moon(interactions.Extension):
             chartData["friends"] = friends[start_system:end_system]
             chartData["enemies"] = enemies[start_system:end_system]
             chartData["moons"] = moons[start_system:end_system]
-            await ctx.send(str(Moon.get_chart_url(self, chartData, 'xl')))
+            return str(Moon.get_chart_url(self, chartData, 'xl'))
+
+    @interactions.extension_command(name="phalanx_map",
+                                    description="Zeigt die Phalanxgebiete in einem angegebenen Bereich an",
+                                    options=moon_options.phalanx_map_options)
+    async def phalanx_map(self, ctx: interactions.CommandContext, *, galaxy: int, start_system: int, end_system: int):
+        await ctx.defer()
+        if(AuthHandler.instance().check(ctx)):
+            if end_system - start_system > 200:
+                await ctx.defer()
+                await ctx.send("Maximal 200 Systeme als Bereich")
+            await ctx.send(Moon.create_map(self, galaxy, start_system, end_system))
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
         
+    @interactions.extension_command(name="moon_data",
+                                    description="Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
+                                    options=moon_options.moon_data_options)
+    async def moon_data(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int, position: int):
+        await ctx.defer()
+        db_result = Moon.get_moon(self, galaxy, solarsystem, position)
+        result = ""
+        if len(db_result) == 1:
+            result_list = db_result[0]
+            player_name = Moon.get_player_name(self, int(result_list[3]))
+            if len(player_name) == 1:
+                try:
+                    player_name = player_name[0][0]
+                except:
+                    player_name = str(result_list[3]) + " (Keinen Namen gefunden)"
+            result = result + "Galaxie: **" + str(result_list[0]) + "**\t"
+            result = result + "System: **" + str(result_list[1]) + "**\t"
+            result = result + "Position: **" + str(result_list[2]) + "**\t\n\n"
+            result = result + "Spieler:\t\t\t\t\t**" + str(player_name) + "**\n\n"
+            result = result + "Phalanx-Level:\t\t**" + str(result_list[4]) + "**\n"
+            result = result + "Basis-Level: \t\t\t**" + str(result_list[5]) + "**\n"
+            result = result + "Robo-Level: \t\t\t**" + str(result_list[6]) + "**\n"
+            result = result + "Sprungtor-Level:\t**" + str(result_list[7]) + "**\n"
+        else:
+            result = "Keine Daten gefunden!"
 
+        await ctx.send(str(result))
 
 def setup(bot: interactions.Client):
     Moon(bot)
