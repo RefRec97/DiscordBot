@@ -118,9 +118,33 @@ class Planet(interactions.Extension):
                 type=interactions.OptionType.STRING,
                 required=True,
             ),
+            interactions.Option(
+                name="phalanx",
+                description="Level der Phalanx, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=False,
+            ),
+            interactions.Option(
+                name="basis",
+                description="Level der Mondbasis, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=False,
+            ),
+            interactions.Option(
+                name="robo",
+                description="Level der Roboterfabrik, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=False,
+            ),
+            interactions.Option(
+                name="sprungtor",
+                description="Level des Sprungtores, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=False,
+            ),
         ],
     )
-    async def add_moon(self, ctx: interactions.CommandContext, *, username, position):
+    async def add_moon(self, ctx: interactions.CommandContext, *, username, position, phalanx=0, basis=0, robo=0, sprungtor=0):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
@@ -143,13 +167,72 @@ class Planet(interactions.Extension):
             return
         else:
             if(AuthHandler.instance().check(ctx)):
-                self._db.add_moon(galaxy, system, location, id)
+                self._db.add_moon(galaxy, system, location, id, phalanx, basis, robo, sprungtor)
                 await ctx.send('Mond gespeichert')
             else:
                 await ctx.send("Keine Rechte diesen Befehl zu nutzen")
             
             #todo: check for failure
     
+    @interactions.extension_command(
+        name="update_moon",
+        description="Updatet einen existierenden Mond",
+        options = [
+            interactions.Option(
+                name="position",
+                description="position im format <g>:<s>:<p>",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="phalanx",
+                description="Level der Phalanx, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="basis",
+                description="Level der Mondbasis, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="robo",
+                description="Level der Roboterfabrik, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+            interactions.Option(
+                name="sprungtor",
+                description="Level des Sprungtores, standardmäßig 0",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def update_moon(self, ctx: interactions.CommandContext, *, position, phalanx, basis, robo, sprungtor):
+
+        try:
+            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
+            galaxy = result.group(1)
+            system = result.group(2)
+            location = result.group(3)
+        except:
+            await ctx.send('Position konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
+            return
+        await ctx.defer()
+        if not self._db.check_moon(galaxy, system, location):
+            await ctx.send('Kein Mond vorhanden')
+            return
+        else:
+            if(AuthHandler.instance().check(ctx)):
+                self._db.update_moon(galaxy, system, location, phalanx, basis, robo, sprungtor)
+                await ctx.send('Mond gespeichert')
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            
+            #todo: check for failure
+
     @interactions.extension_command(
         name="del_moon",
         description="Löscht einen Mond",

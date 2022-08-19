@@ -253,7 +253,7 @@ class DataBase:
         self.teardown()
         return result
 
-    def add_moon(self, galaxy, system, position, playerId, phalanx = 0, base = 0, robo = 0, jumpgate = 0):
+    def add_moon(self, galaxy, system, position, playerId, phalanx, base, robo, jumpgate):
         self.setup()
         cursor = self.mydb.cursor()
         cursor.execute('insert into moons '+
@@ -264,6 +264,17 @@ class DataBase:
         cursor.close()
         self.teardown()
     
+    def update_moon(self, galaxy, system, position, phalanx, base, robo, jumpgate):
+        self.setup()
+        cursor = self.mydb.cursor()
+        cursor.execute('update moons '+
+            'set phalanxlvl = %s, baselvl = %s, robotlvl = %s, jumpgate = %s '+
+            'where galaxy = %s and solarsystem = %s and position = %s;',
+            (phalanx, base, robo, jumpgate, galaxy, system, position))
+        self.mydb.commit()
+        cursor.close()
+        self.teardown()
+
     def del_moon(self, galaxy, system, position):
         self.setup()
         cursor = self.mydb.cursor()
