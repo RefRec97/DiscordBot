@@ -13,7 +13,7 @@ class Planet(interactions.Extension):
         self._db = DataBase()
 
     @interactions.extension_command(
-        name="add_planet",
+        name="planet_add",
         description="Speichert einen neuen Planeten",
         options = [
             interactions.Option(
@@ -23,34 +23,37 @@ class Planet(interactions.Extension):
                 required=True,
             ),
             interactions.Option(
+                name="galaxy",
+                description="Galaxie des Mondes",
+                type=interactions.OptionType.INTEGER,
+                required=True,
+            ),
+            interactions.Option(
+                name="system",
+                description="System in der Galaxie",
+                type=interactions.OptionType.INTEGER,
+                required=True,
+            ),
+            interactions.Option(
                 name="position",
-                description="position im format <g>:<s>:<p>",
-                type=interactions.OptionType.STRING,
+                description="Position im System",
+                type=interactions.OptionType.INTEGER,
                 required=True,
             ),
         ],
     )
-    async def add_planet(self, ctx: interactions.CommandContext, *, username, position):
-        
-        try:
-            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            galaxy = result.group(1)
-            system = result.group(2)
-            location = result.group(3)
-        except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !addPlanet 1:1:1,Name')
-            return
+    async def planet_add(self, ctx: interactions.CommandContext, *, username, galaxy:int, system:int, position:int):
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
         await ctx.defer()
         id = self._db.get_id(username)
-        if self._db.check_planets(galaxy, system, location):
+        if self._db.check_planets(galaxy, system, position):
             await ctx.send('Planet bereits gespeichert')
             return
         else:
             if(AuthHandler.instance().check(ctx)):
-                self._db.add_planet(galaxy, system, location, id)
+                self._db.add_planet(galaxy, system, position, id)
                 await ctx.send('Planet gespeichert')
             else:
                 await ctx.send("Keine Rechte diesen Befehl zu nutzen")
@@ -58,7 +61,7 @@ class Planet(interactions.Extension):
             #todo check for failure
 
     @interactions.extension_command(
-        name="del_planet",
+        name="planet_delete",
         description="Löscht einen Planeten",
         options = [
             interactions.Option(
@@ -75,7 +78,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
-    async def del_planet(self, ctx: interactions.CommandContext, *, username, position):
+    async def planet_delete(self, ctx: interactions.CommandContext, *, username, position):
         
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
@@ -103,7 +106,7 @@ class Planet(interactions.Extension):
             #todo: check for failure
 
     @interactions.extension_command(
-        name="add_moon",
+        name="moon_add",
         description="Speichert einen neuen Mond",
         options = [
             interactions.Option(
@@ -113,9 +116,21 @@ class Planet(interactions.Extension):
                 required=True,
             ),
             interactions.Option(
+                name="galaxy",
+                description="Galaxie des Mondes",
+                type=interactions.OptionType.INTEGER,
+                required=True,
+            ),
+            interactions.Option(
+                name="system",
+                description="System in der Galaxie",
+                type=interactions.OptionType.INTEGER,
+                required=True,
+            ),
+            interactions.Option(
                 name="position",
-                description="position im format <g>:<s>:<p>",
-                type=interactions.OptionType.STRING,
+                description="Position im System",
+                type=interactions.OptionType.INTEGER,
                 required=True,
             ),
             interactions.Option(
@@ -144,30 +159,22 @@ class Planet(interactions.Extension):
             ),
         ],
     )
-    async def add_moon(self, ctx: interactions.CommandContext, *, username, position, phalanx=0, basis=0, robo=0, sprungtor=0):
+    async def moon_add(self, ctx: interactions.CommandContext, *, username, galaxy, system, position, phalanx=0, basis=0, robo=0, sprungtor=0):
 
-        try:
-            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            galaxy = result.group(1)
-            system = result.group(2)
-            location = result.group(3)
-        except:
-            await ctx.send('Position konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
-            return
         if not self._db.check_player(username):
             await ctx.send('Spieler nicht gefunden')
             return
         await ctx.defer()
         id = self._db.get_id(username)
-        if not self._db.check_planets(galaxy, system, location):
+        if not self._db.check_planets(galaxy, system, position):
             await ctx.send('Kein Planet auf der Position')
             return
-        elif self._db.check_moon(galaxy, system, location):
+        elif self._db.check_moon(galaxy, system, position):
             await ctx.send('Mond bereits gespeichert')
             return
         else:
             if(AuthHandler.instance().check(ctx)):
-                self._db.add_moon(galaxy, system, location, id, phalanx, basis, robo, sprungtor)
+                self._db.add_moon(galaxy, system, position, id, phalanx, basis, robo, sprungtor)
                 await ctx.send('Mond gespeichert')
             else:
                 await ctx.send("Keine Rechte diesen Befehl zu nutzen")
@@ -175,7 +182,7 @@ class Planet(interactions.Extension):
             #todo: check for failure
     
     @interactions.extension_command(
-        name="update_moon",
+        name="moon_update",
         description="Updatet einen existierenden Mond",
         options = [
             interactions.Option(
@@ -210,7 +217,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
-    async def update_moon(self, ctx: interactions.CommandContext, *, position, phalanx, basis, robo, sprungtor):
+    async def moon_update(self, ctx: interactions.CommandContext, *, position, phalanx, basis, robo, sprungtor):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
@@ -234,7 +241,7 @@ class Planet(interactions.Extension):
             #todo: check for failure
 
     @interactions.extension_command(
-        name="del_moon",
+        name="moone_delete",
         description="Löscht einen Mond",
         options = [
             interactions.Option(
@@ -251,7 +258,7 @@ class Planet(interactions.Extension):
             ),
         ],
     )
-    async def del_moon(self, ctx: interactions.CommandContext, *, username, position):
+    async def moon_delete(self, ctx: interactions.CommandContext, *, username, position):
 
         try:
             result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)

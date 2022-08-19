@@ -246,10 +246,10 @@ class Moon(interactions.Extension):
             chartData["moons"] = moons[start_system:end_system]
             return str(Moon.get_chart_url(self, chartData, 'xl'))
 
-    @interactions.extension_command(name="phalanx_map",
+    @interactions.extension_command(name="moon_phalanx_map",
                                     description="Zeigt die Phalanxgebiete in einem angegebenen Bereich an",
                                     options=moon_options.phalanx_map_options)
-    async def phalanx_map(self, ctx: interactions.CommandContext, *, galaxy: int, start_system: int, end_system: int):
+    async def moon_phalanx_map(self, ctx: interactions.CommandContext, *, galaxy: int, start_system: int, end_system: int):
         await ctx.defer()
         if(AuthHandler.instance().check(ctx)):
             if end_system - start_system > 200:
@@ -283,7 +283,7 @@ class Moon(interactions.Extension):
         return result
 
     @interactions.extension_command(name="moon_data",
-                                    description="Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
+                                    description="Zeigt die Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
                                     options=moon_options.moon_data_options)
     async def moon_data(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int, position: int):
         await ctx.defer()
