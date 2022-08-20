@@ -160,24 +160,26 @@ class Planet(interactions.Extension):
         ],
     )
     async def moon_add(self, ctx: interactions.CommandContext, *, username, galaxy, system, position, phalanx=0, basis=0, robo=0, sprungtor=0):
-
-        if not self._db.check_player(username):
-            await ctx.send('Spieler nicht gefunden')
-            return
-        await ctx.defer()
-        id = self._db.get_id(username)
-        if not self._db.check_planets(galaxy, system, position):
-            await ctx.send('Kein Planet auf der Position')
-            return
-        elif self._db.check_moon(galaxy, system, position):
-            await ctx.send('Mond bereits gespeichert')
-            return
-        else:
-            if(AuthHandler.instance().check(ctx)):
-                self._db.add_moon(galaxy, system, position, id, phalanx, basis, robo, sprungtor)
-                await ctx.send('Mond gespeichert')
+        if(AuthHandler.instance().check(ctx)):
+            if not self._db.check_player(username):
+                await ctx.send('Spieler nicht gefunden')
+                return
+            await ctx.defer()
+            id = self._db.get_id(username)
+            status = ''
+            if not self._db.check_planets(galaxy, system, position):
+                self._db.add_planet(galaxy, system, position, id)
+                status = 'Planet gespeichert\n'
+            
+            if self._db.check_moon(galaxy, system, position):
+                await ctx.send('Mond bereits gespeichert')
+                return
             else:
-                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+                self._db.add_moon(galaxy, system, position, id, phalanx, basis, robo, sprungtor)
+                status = status + 'Mond gespeichert'
+                await ctx.send(status)
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
             
             #todo: check for failure
     
