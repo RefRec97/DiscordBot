@@ -150,6 +150,16 @@ class Moon(interactions.Extension):
                     "fill": False,
                     "showLine": False,
                     "pointRadius": 15,
+                    "datalabels": {
+                        "title": {
+                            "font": {
+                              "weight": 'bold'
+                            }
+                        },       
+                        "value": {
+                            "color": 'green'
+                        },
+                    }
                 }, {
                     "yAxisID": "phalanx",
                     "label": "Enemy",
@@ -158,6 +168,12 @@ class Moon(interactions.Extension):
                     "steppedLine": True,
                     "data": chartData["enemies"],
                     "fill": True,
+                    "datalabels": {
+                        "labels": {
+                            "title": None,
+                            "value": None
+                        }
+                    }
                 }, {
                     "yAxisID": "phalanx",
                     "label": "Friend",
@@ -166,6 +182,12 @@ class Moon(interactions.Extension):
                     "steppedLine": True,
                     "data": chartData["friends"],
                     "fill": True,
+                    "datalabels": {
+                        "labels": {
+                            "title": None,
+                            "value": None
+                        }
+                    }
                 }]
             },
             "options": {
@@ -183,7 +205,23 @@ class Moon(interactions.Extension):
                     "point": {
                         "pointStyle": "star"
                     },
-                }
+                }, "plugins": {
+                    "datalabels": {
+                        "anchor": 'end',
+                        "align": 'top',
+                        "color": '#fff',
+                        "backgroundColor": 'rgba(34, 139, 34, 0.6)',
+                        "borderColor": 'rgba(34, 139, 34, 1.0)',
+                        "borderWidth": 1,
+                        "borderRadius": 5,
+                        "display": 'auto',
+                        "title": {
+                            "font": {
+                              "weight": 'bold'
+                            }
+                        }
+                    },
+                },
             }
         }
         return qc.get_short_url()
