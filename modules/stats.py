@@ -92,7 +92,7 @@ class Stats(interactions.Extension):
             data = self._db.get_player_chart_history(username)
             chartData = self._playerData.build_chart_dict(data)
             url = self._getChartURL(chartData, size)
-            returnMsg = url
+            returnMsg = "```%s```%s" % (username, url)
             await ctx.send(returnMsg)
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
