@@ -1,4 +1,3 @@
-from discord.ext import commands
 from bot_utils.singleton import Singleton
 from bot_utils.db import DataBase
 
@@ -6,7 +5,6 @@ from bot_utils.db import DataBase
 @Singleton
 class AuthHandler:
     def __init__(self):
-        self._bot: commands.bot = None
         self._groups: list = []
         self._db = DataBase()
         self._adminrights = ['admin']
@@ -15,8 +13,8 @@ class AuthHandler:
         self._admincommands = []
         self._modcommands = ['auth', 'addUpdate', 'deauth', 'ban']
 
-    def addBot(self, bot: commands.bot):
-        self._bot = bot
+    #def addBot(self, bot: commands.bot):
+    #    self._bot = bot
 
     def check(self, ctx):
         author = str(ctx.user.username).lower()
