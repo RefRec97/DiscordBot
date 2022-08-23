@@ -293,6 +293,7 @@ class Moon(interactions.Extension):
             if end_system - start_system > 200:
                 await ctx.defer()
                 await ctx.send("Maximal 200 Systeme als Bereich")
+                return
             await ctx.send(Moon.create_map(self, galaxy, start_system, end_system))
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
