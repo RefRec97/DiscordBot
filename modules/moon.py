@@ -82,10 +82,10 @@ class Moon(interactions.Extension):
         return (phalanx * phalanx) - 1
 
 
-    def calculate_start_system(self, system: int, range: int):
+    def calculate_start_system(self, system: int, phalanx: int):
         start = system
-        if range > 1:
-            range = Moon.calculate_phalanx_range(self, range)
+        if phalanx > 1:
+            range = Moon.calculate_phalanx_range(self, phalanx)
             start = system - range
 
         if start < 1:
@@ -93,10 +93,10 @@ class Moon(interactions.Extension):
         return start
 
 
-    def calculate_end_system(self, system: int, range: int):
+    def calculate_end_system(self, system: int, phalanx: int):
         end = system
-        if range > 1:
-            range = Moon.calculate_phalanx_range(self, range)
+        if phalanx > 1:
+            range = Moon.calculate_phalanx_range(self, phalanx)
             end = system + range
 
         if end > 400:
@@ -327,6 +327,87 @@ class Moon(interactions.Extension):
         await ctx.defer()
         if(AuthHandler.instance().check(ctx)):
             result = Moon.create_moon_data(self, galaxy, solarsystem, position)
+            await ctx.send(str(result))
+        else:
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+    
+    def read_phalanxed_moon_data(self, galaxy):
+        moons_enemies = []
+        moons_friends = []
+        result = Moon.get_moons(self, galaxy)
+        for moon in result:
+            moon_entry = {"phalanx": int(moon[0]), "system": int(moon[1]), "position": moon[2], "playerId": moon[3],
+                        "allianceId": Moon.get_alliance_by_player(self, moon[3])}
+
+            if Moon.is_friend(self, Moon.get_alliance_by_player(self, moon[3])):
+                moons_friends.append(moon_entry)
+            else:
+                moons_enemies.append(moon_entry)
+       
+        entries = {"friends": moons_friends, "enemies": moons_enemies}
+        return entries
+
+    def is_phalanxed_moon(self, entry: dict(), solarsystem:int):
+        phalanx = int(entry["phalanx"])
+        system = int(entry["system"])
+
+        if phalanx == 1:
+            return solarsystem == system
+
+        if phalanx > 1:
+            min_system = Moon.calculate_start_system(self, system, phalanx)
+            max_system = Moon.calculate_end_system(self, system, phalanx)
+            return min_system <= solarsystem and solarsystem <= max_system
+        return False
+
+    def create_phalanxed_moon_table(self, galaxy, solarsystem):
+        entries = Moon.read_phalanxed_moon_data(self, galaxy)
+        enemies = dict()
+        friends = dict()
+
+        for friend in entries["friends"]:
+            if Moon.is_phalanxed_moon(self, friend, solarsystem):
+                key = (friend["system"], friend["position"])
+                friends[key] = friend
+
+        for enemy in entries["enemies"]:
+            if Moon.is_phalanxed_moon(self, enemy, solarsystem):
+                key = (enemy["system"], enemy["position"])
+                enemies[key] = enemy
+        
+        report = "**Friends** \n"
+        sorted_friend_keys = sorted(friends)
+        for key in sorted_friend_keys:
+            friend = friends[key]
+            player_name = Moon.get_player_name(self, int(friend["playerId"]))
+            if len(player_name) == 1:
+                try:
+                    player_name = player_name[0][0]
+                except:
+                    player_name = str(friend["playerId"]) + " (Keinen Namen gefunden)"
+            report = report + "Sys: " + str(friend["system"]) + " Pos: " + str(friend["position"]) + "\t Spieler: **" + str(player_name) + "** - Phalanx: \t **" + str(friend["phalanx"]) + "**\n"
+
+        report = report + "\n" + "**Enemies** \n"
+        sorted_enemy_keys = sorted(enemies)
+        for key in sorted_enemy_keys:
+            enemy = enemies[key]
+            player_name = Moon.get_player_name(self, int(enemy["playerId"]))
+            if len(player_name) == 1:
+                try:
+                    player_name = player_name[0][0]
+                except:
+                    player_name = str(enemy["playerId"]) + " (Keinen Namen gefunden)"
+            report = report + "Sys: " + str(enemy["system"]) + " Pos: " + str(enemy["position"]) + "\t Spieler: **" + str(player_name) + "** - Phalanx: \t **" + str(enemy["phalanx"]) + "**\n"
+        return report
+
+    @interactions.extension_command(name="moons_in_range",
+                                    description="Zeigt alle Monde an die das Zielsystem phalanxen koennen.",
+                                    options=moon_options.moons_in_range_options)
+    async def moons_in_range(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int):
+        await ctx.defer()
+
+        if(AuthHandler.instance().check(ctx)):
+            result = Moon.create_phalanxed_moon_table(self, galaxy, solarsystem)
             await ctx.send(str(result))
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")

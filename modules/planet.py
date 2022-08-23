@@ -290,45 +290,45 @@ class Planet(interactions.Extension):
             
             #todo: check failure
 
-    #@addPlanet.error
-    async def addPlanet_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !addPlanet 1:1:1,Sc0t')
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.send('Keine rechte diesen Befehl zu nutzen')
-        else:
-            logging.error(error)
-            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    ##@addPlanet.error
+    #async def addPlanet_error(self, ctx, error):
+    #    if isinstance(error, commands.MissingRequiredArgument):
+    #        await ctx.send('Fehlende Argumente!\nBsp.: !addPlanet 1:1:1,Sc0t')
+    #    elif isinstance(error, commands.CheckFailure):
+    #        await ctx.send('Keine rechte diesen Befehl zu nutzen')
+    #    else:
+    #        logging.error(error)
+    #        await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    #@delPlanet.error
-    async def delPlanet_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !delPlanet 1:1:1,Sc0t')
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.send('Keine rechte diesen Befehl zu nutzen')
-        else:
-            logging.error(error)
-            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    ##@delPlanet.error
+    #async def delPlanet_error(self, ctx, error):
+    #    if isinstance(error, commands.MissingRequiredArgument):
+    #        await ctx.send('Fehlende Argumente!\nBsp.: !delPlanet 1:1:1,Sc0t')
+    #    elif isinstance(error, commands.CheckFailure):
+    #        await ctx.send('Keine rechte diesen Befehl zu nutzen')
+    #    else:
+    #        logging.error(error)
+    #        await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    #@addMoon.error
-    async def addMoon_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !addMoon 1:1:1,Sc0t')
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.send('Keine rechte diesen Befehl zu nutzen')
-        else:
-            logging.error(error)
-            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    ##@addMoon.error
+    #async def addMoon_error(self, ctx, error):
+    #    if isinstance(error, commands.MissingRequiredArgument):
+    #        await ctx.send('Fehlende Argumente!\nBsp.: !addMoon 1:1:1,Sc0t')
+    #    elif isinstance(error, commands.CheckFailure):
+    #        await ctx.send('Keine rechte diesen Befehl zu nutzen')
+    #    else:
+    #        logging.error(error)
+    #        await ctx.send('ZOMFG ¯\_(ツ)_/¯')
     
-    #@delMoon.error
-    async def delMoon_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Fehlende Argumente!\nBsp.: !delMoon 1:1:1,Sc0t')
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.send('Keine rechte diesen Befehl zu nutzen')
-        else:
-            logging.error(error)
-            await ctx.send('ZOMFG ¯\_(ツ)_/¯')
+    ##@delMoon.error
+    #async def delMoon_error(self, ctx, error):
+    #    if isinstance(error, commands.MissingRequiredArgument):
+    #        await ctx.send('Fehlende Argumente!\nBsp.: !delMoon 1:1:1,Sc0t')
+    #    elif isinstance(error, commands.CheckFailure):
+    #        await ctx.send('Keine rechte diesen Befehl zu nutzen')
+    #    else:
+    #        logging.error(error)
+    #        await ctx.send('ZOMFG ¯\_(ツ)_/¯')
 
 def setup(bot: interactions.Client):
     Planet(bot)

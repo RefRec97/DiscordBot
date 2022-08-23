@@ -42,3 +42,18 @@ moon_data_options = [
     ),
 ]
 
+moons_in_range_options = [
+    interactions.Option(
+        name="galaxy",
+        description="Galaxie des Ziels",
+        type=interactions.OptionType.INTEGER,
+        required=True,
+    ),
+    interactions.Option(
+        name="solarsystem",
+        description="System des Ziels",
+        type=interactions.OptionType.INTEGER,
+        required=True,
+    ),
+]
+
