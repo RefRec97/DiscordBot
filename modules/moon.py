@@ -408,7 +408,8 @@ class Moon(interactions.Extension):
         await ctx.defer()
 
         if(AuthHandler.instance().check(ctx)):
-            result = Moon.create_phalanxed_moon_table(self, galaxy, solarsystem)
+            result = "**Target (Galaxy= " + str(galaxy) + ", System= " + str(solarsystem) + ")**"
+            result = result + Moon.create_phalanxed_moon_table(self, galaxy, solarsystem)
             await ctx.send(str(result))
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
