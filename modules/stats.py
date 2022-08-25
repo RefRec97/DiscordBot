@@ -1,7 +1,6 @@
 from ast import arg
 import datetime
 from email.policy import default
-from datetime import datetime
 import logging
 from tokenize import String
 from h11 import Data
@@ -495,7 +494,6 @@ class Stats(interactions.Extension):
                 player_dataset["borderColor"] = colors[counter]["border"]
                 player_dataset["backgroundColor"] = colors[counter]["background"]
                 datasets.append(player_dataset)
-                logging.info(value)
                 counter +=1
         return datasets
 
@@ -551,7 +549,7 @@ class Stats(interactions.Extension):
         description="Vergleicht die Punkte der angegebenen Spieler miteinander",
         options = stats_options.compare_options
     )
-    async def compare_chart(self, ctx: interactions.CommandContext, *, comparator: int, size:str, player_1: str, player_2: str, player_3="", player_4="", player_5=""):        
+    async def compare_chart(self, ctx: interactions.CommandContext, *, comparator: int, size:str = 'm', player_1: str, player_2: str, player_3="", player_4="", player_5=""):        
         await ctx.defer()
         if(AuthHandler.instance().check(ctx)):
             player_list = []
