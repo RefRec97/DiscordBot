@@ -1,0 +1,45 @@
+import interactions
+
+compare_options = [
+    interactions.Option(
+        name="comparator",
+        description="1 = Gesamtpunkte, 2 = Flotte, 3 = Forschung, Gebaeude = 4, Verteidigung = 5",
+        type=interactions.OptionType.INTEGER,
+        required=True,
+    ),interactions.Option(
+        name="size",
+        description="Diagrammgroesse(s,m,l,xl)",
+        type=interactions.OptionType.STRING,
+        required=True,
+    ),
+    interactions.Option(
+        name="player_1",
+        description="Name des ersten Spielers",
+        type=interactions.OptionType.STRING,
+        required=True,
+    ),
+    interactions.Option(
+        name="player_2",
+        description="Name des zweiten Spielers",
+        type=interactions.OptionType.STRING,
+        required=True,
+    ),
+    interactions.Option(
+        name="player_3",
+        description="Name des dritten Spielers",
+        type=interactions.OptionType.STRING,
+        required=False,
+    ),
+    interactions.Option(
+        name="player_4",
+        description="Name des vierten Spielers",
+        type=interactions.OptionType.STRING,
+        required=False,
+    ),
+    interactions.Option(
+        name="player_5",
+        description="Name des fuenften Spielers",
+        type=interactions.OptionType.STRING,
+        required=False,
+    ),
+]

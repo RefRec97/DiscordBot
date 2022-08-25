@@ -23,6 +23,18 @@ class DataBase:
     def teardown(self):
         self.mydb.close()
 
+    def get_player_id_by_name(self, player_name):
+        self.setup()
+        cursor = self.mydb.cursor()
+
+        playerNameQuery = "SELECT playerId FROM data.players Where name =\"" + str(player_name) + "\";"
+        cursor.execute(playerNameQuery)
+        value = cursor.fetchall()[0][0]
+        cursor.close()
+        self.mydb.commit()
+        self.teardown()
+        return value
+
     def get_player_chart_history(self,player_name):
         
         self.setup()
