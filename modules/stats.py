@@ -1,6 +1,8 @@
 from ast import arg
+import datetime
 from email.policy import default
 import logging
+from tokenize import String
 from h11 import Data
 from quickchart import QuickChart
 from bot_utils import authHandler
@@ -71,6 +73,18 @@ class Stats(interactions.Extension):
                 required=True,
             ),
             interactions.Option(
+                name="interval_length",
+                description="Länge des gewünschten Zeitraumes in Wochen",
+                type=interactions.OptionType.INTEGER,
+                required=False,
+            ),
+            interactions.Option(
+                name="interval_end",
+                description="Enddatum des gewünschten Zeitraumes, Format 01/01/1970",
+                type=interactions.OptionType.STRING,
+                required=False,
+            ),
+            interactions.Option(
                 name="size",
                 description="size of chart, default m",
                 type=interactions.OptionType.STRING,
@@ -84,12 +98,21 @@ class Stats(interactions.Extension):
             ),
         ],
     )
-    async def chart(self, ctx: interactions.CommandContext, *,username, size="m"):        
+    async def chart(self, ctx: interactions.CommandContext, *,username, interval_length=8, interval_end= datetime.datetime.today(), size="m"):        
         if not self._db.check_player(username):
             return "Nutzer nicht gefunden"
         await ctx.defer()
+        if(type(interval_end) == str):
+            interval_end = datetime.datetime.strptime(interval_end, "%d/%m/%Y")
+            interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
+        elif(type(interval_end) == datetime.datetime):
+            pass
+        else:
+            await ctx.send("Enddatum falsches Format")
+            return
+        start_date = interval_end - datetime.timedelta(weeks = interval_length)
         if(AuthHandler.instance().check(ctx)):
-            data = self._db.get_player_chart_history(username)
+            data = self._db.get_player_chart_history(username, start_date, interval_end)
             chartData = self._playerData.build_chart_dict(data)
             url = self._getChartURL(chartData, size)
             returnMsg = "```%s```%s" % (username, url)

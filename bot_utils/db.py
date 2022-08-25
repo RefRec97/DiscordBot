@@ -23,7 +23,7 @@ class DataBase:
     def teardown(self):
         self.mydb.close()
 
-    def get_player_chart_history(self,player_name):
+    def get_player_chart_history(self,player_name, start_date, end_date):
         
         self.setup()
         select_cursor = self.mydb.cursor(buffered=True)
@@ -32,7 +32,7 @@ class DataBase:
         select_cursor.execute('Select data.generalRank, data.generalScore, data.buildingScore,'+
             ' data.researchScore, data.fleetScore, data.date, data.defensiveScore from data'+
             ' inner join players on data.playerId = players.playerId'+
-            ' where players.name = %s order by date asc;',(player_name,))
+            ' where players.name = %s and data.date > %s and data.date < %s order by date asc;',(player_name, start_date, end_date,))
         result = select_cursor.fetchall()
         select_cursor.close()
         self.teardown()
