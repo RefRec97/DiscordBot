@@ -77,7 +77,7 @@ class Allianz(interactions.Extension):
         if(AuthHandler.instance().check(ctx)):
             result = self._getAllianzPosString(allianz_name, galaxy, sort_bool)
             for result_print in result:
-                await ctx.send(result_print)
+                await ctx.send("```python\n" + result_print + "```")
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
         
@@ -115,19 +115,21 @@ class Allianz(interactions.Extension):
         return self._getStringFromPlanets(allianzPlanetsinGalaxy, galaxy, orderByPlayer)
     
     def _getStringFromPlanets(self, planets: list, gal: str, orderByPlayer: bool):
-        if len(planets) == 0:
-            return f"``` Keine bekannte Planeten in galaxy {gal} ```"
-        
         result = []
+        if len(planets) == 0:
+            result.append(f"Keine bekannten Planeten (Galaxie:  {gal})")
+            return result
+        
+        
         returnStr = ""
         for idx,pos in enumerate(planets):
             if (idx%25==0 and idx != 0):
-                result.append("```" + returnStr + "```")
+                result.append(returnStr)
                 returnStr = ""
             returnStr += "{:10}".format(pos)
 
             if idx == len(planets)-1 and idx%25 != 0:
-                result.append("```" + returnStr + "```")
+                result.append(returnStr)
         
         return result
 
