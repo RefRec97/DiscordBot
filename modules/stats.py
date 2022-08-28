@@ -561,23 +561,30 @@ class Stats(interactions.Extension):
                 player_list.append(player_5)
 
             data_dict = dict()
+            filterText = ""
             for player in player_list:
                 player_dict = dict()
                 if comparator == 1:
+                    filterText = "Gesamtpunkte"
                     player_dict["general"] = Stats.get_general_points(self, player)
                 elif comparator == 2:
+                    filterText = "Flottenpunkte"
                     player_dict["fleet"] = Stats.get_fleet_points(self, player)
                 elif comparator == 3:
+                    filterText = "Forschungspunkte"
                     player_dict["research"] = Stats.get_research_points(self, player)
                 elif comparator == 4:
+                    filterText = "Gebäudepunkte"
                     player_dict["buildings"] = Stats.get_building_points(self, player)
                 elif comparator == 5:
+                    filterText = "Verteidigungspunkte"
                     player_dict["defense"] = Stats.get_defense_points(self, player)
                 else:
+                    filterText = "Gesamtpunkte"
                     player_dict["general"] = Stats.get_general_points(self, player)
                 data_dict["date"] = Stats.get_date(self, player)
                 data_dict[player] = player_dict
-            await ctx.send(Stats.build_compare_chart(self, size, data_dict))
+            await ctx.send("``` " + filterText + " ```" + Stats.build_compare_chart(self, size, data_dict))
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
 
