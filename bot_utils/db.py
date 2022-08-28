@@ -337,19 +337,24 @@ class DataBase:
         self.teardown()
         return result
     
-    def get_allypos_gal(self, allyname: str, gal):
+    def get_allypos_gal(self, allyname: str, gal: str, orderByPlayer: bool):
         self.setup()
         cursor = self.mydb.cursor(buffered=True)
         result = []
-        cursor.execute('select planets.galaxy, planets.solarsystem, planets.position from planets '+ 
-            'inner join players on players.playerId = planets.playerId '+
-            'inner join alliances on players.allianceId = alliances.allianceId '+
-            'where alliances.name = %s and planets.galaxy = %s order by planets.solarsystem asc, planets.position asc;',(allyname,gal))
+        if orderByPlayer:
+            cursor.execute('select planets.galaxy, planets.solarsystem, planets.position, players.name from planets '+ 
+                'inner join players on players.playerId = planets.playerId '+
+                'inner join alliances on players.allianceId = alliances.allianceId '+
+                'where alliances.name = %s and planets.galaxy = %s order by players.name asc, planets.solarsystem asc, planets.position asc;',(allyname,gal))
+        else:
+            cursor.execute('select planets.galaxy, planets.solarsystem, planets.position, players.name from planets '+ 
+                'inner join players on players.playerId = planets.playerId '+
+                'inner join alliances on players.allianceId = alliances.allianceId '+
+                'where alliances.name = %s and planets.galaxy = %s order by planets.solarsystem asc, planets.position asc;',(allyname,gal))
         data = cursor.fetchall()
-        i = 0
+
         for plan in data:
-            result.append(str(data[i][0])+":"+str(data[i][1])+":"+str(data[i][2]))
-            i += 1
+            result.append(str(plan[0])+":"+str(plan[1])+":"+str(plan[2])+" - "+str(plan[3]) + " \t\n")
         
         cursor.close()
         self.teardown()

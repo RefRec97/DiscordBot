@@ -54,15 +54,30 @@ class Allianz(interactions.Extension):
                 type=interactions.OptionType.STRING,
                 required=True,
             ),
+            interactions.Option(
+                name="sorting",
+                description="Sortierung nach System oder Spielername",
+                type=interactions.OptionType.STRING,
+                required=False,
+                choices=[
+                    interactions.Choice(name="system", value="system"), 
+                    interactions.Choice(name="player", value="player"),
+                ],
+            ),
         ],
     )
-    async def allianz_position(self, ctx: interactions.CommandContext, *,allianz_name, galaxy):
-        
+    async def allianz_position(self, ctx: interactions.CommandContext, *,allianz_name, galaxy, sorting:str = "system"):
+        sort_bool = False
+        if sorting == "player":
+            sort_bool = True
+
         if not self._db.check_ally(allianz_name):
             await ctx.send('Allianzname nicht gefunden')
             return
         if(AuthHandler.instance().check(ctx)):
-            await ctx.send(self._getAllianzPosString(allianz_name, galaxy))
+            result = self._getAllianzPosString(allianz_name, galaxy, sort_bool)
+            for result_print in result:
+                await ctx.send(result_print)
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
         
@@ -95,21 +110,26 @@ class Allianz(interactions.Extension):
         self._allianzData = self._PlayerData.getAllianzDataReference()
         self._topAllianzData = self._getAllTopAllianzMembers(self._allianzData)
 
-    def _getAllianzPosString(self, allianzName, galaxy):
-        allianzPlanetsinGalaxy = self._db.get_allypos_gal(allianzName, galaxy)
-        return self._getStringFromPlanets(allianzPlanetsinGalaxy, galaxy)
+    def _getAllianzPosString(self, allianzName:str, galaxy:str, orderByPlayer: bool = False):
+        allianzPlanetsinGalaxy = self._db.get_allypos_gal(allianzName, galaxy, orderByPlayer)
+        return self._getStringFromPlanets(allianzPlanetsinGalaxy, galaxy, orderByPlayer)
     
-    def _getStringFromPlanets(self, planets: list, gal: str):
+    def _getStringFromPlanets(self, planets: list, gal: str, orderByPlayer: bool):
         if len(planets) == 0:
             return f"``` Keine bekannte Planeten in galaxy {gal} ```"
         
-        returnStr = "```"
+        result = []
+        returnStr = ""
         for idx,pos in enumerate(planets):
-            if (idx%5==0):
-                returnStr += "\n"
+            if (idx%25==0 and idx != 0):
+                result.append("```" + returnStr + "```")
+                returnStr = ""
             returnStr += "{:10}".format(pos)
 
-        return returnStr + "```"
+            if idx == len(planets)-1 and idx%25 != 0:
+                result.append("```" + returnStr + "```")
+        
+        return result
 
     def _getAllianzString(self, allianzName):
         returnMsg = f"```Top 10 von Allianz {allianzName}\n"
