@@ -309,17 +309,17 @@ class Moon(interactions.Extension):
                     player_name = player_name[0][0]
                 except:
                     player_name = str(result_list[3]) + " (Keinen Namen gefunden)"
-            result = result + "Galaxie: **" + str(result_list[0]) + "**\t"
-            result = result + "System: **" + str(result_list[1]) + "**\t"
-            result = result + "Position: **" + str(result_list[2]) + "**\t\n\n"
-            result = result + "Spieler:\t\t\t\t\t**" + str(player_name) + "**\n\n"
-            result = result + "Phalanx-Level:\t\t**" + str(result_list[4]) + "**\n"
-            result = result + "Basis-Level: \t\t\t**" + str(result_list[5]) + "**\n"
-            result = result + "Robo-Level: \t\t\t**" + str(result_list[6]) + "**\n"
-            result = result + "Sprungtor-Level:\t**" + str(result_list[7]) + "**\n"
+            result = result + "Galaxie: " + str(result_list[0]) + "\t"
+            result = result + "System: " + str(result_list[1]) + "\t"
+            result = result + "Position: " + str(result_list[2]) + "\n\n"
+            result = result + "Spieler:\t\t" + str(player_name) + "\n\n"
+            result = result + "Phlx.-Level:\t" + str(result_list[4]) + "\n"
+            result = result + "Basis-Level:\t" + str(result_list[5]) + "\n"
+            result = result + "Robo.-Level:\t" + str(result_list[6]) + "\n"
+            result = result + "JmpG.-Level:\t" + str(result_list[7]) + "\n"
         else:
             result = "Keine Daten gefunden!"
-        return result
+        return "```python\n" + result + "```"
 
     @interactions.extension_command(name="moon_data",
                                     description="Zeigt die Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
