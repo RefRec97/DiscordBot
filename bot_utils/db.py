@@ -354,7 +354,14 @@ class DataBase:
         data = cursor.fetchall()
 
         for plan in data:
-            result.append(str(plan[0])+":"+str(plan[1])+":"+str(plan[2])+" - "+str(plan[3]) + " \t\n")
+            galaxy_text = str(plan[0])
+            system_text = str(plan[1])
+            while len(system_text) < 3:
+                system_text = " " + system_text
+            position_text = str(plan[2])
+            while len(position_text) < 2:
+                position_text = " " + position_text
+            result.append(galaxy_text+":"+system_text+":"+position_text+" - "+str(plan[3]) + " \t\n")
         
         cursor.close()
         self.teardown()
