@@ -534,10 +534,6 @@ class Stats(interactions.Extension):
                         "position": "right",
                         "stacked": False,
                     }]
-                }, "elements": {
-                    "point": {
-                        "pointStyle": "star"
-                    },
                 },
             }
         }

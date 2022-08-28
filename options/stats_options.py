@@ -6,6 +6,13 @@ compare_options = [
         description="1 = Gesamtpunkte, 2 = Flotte, 3 = Forschung, Gebaeude = 4, Verteidigung = 5",
         type=interactions.OptionType.INTEGER,
         required=True,
+        choices=[
+            interactions.Choice(name="Gesamtpunkte", value=1), 
+            interactions.Choice(name="Flotte", value=2),
+            interactions.Choice(name="Forschung", value=3), 
+            interactions.Choice(name="Gebaeude", value=4),
+            interactions.Choice(name="Verteidigung", value=5),
+        ],
     ),
     interactions.Option(
         name="player_1",
