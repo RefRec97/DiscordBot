@@ -376,7 +376,8 @@ class Moon(interactions.Extension):
                 key = (enemy["system"], enemy["position"])
                 enemies[key] = enemy
         
-        report = "**Friends** \n"
+        result = []
+        report = "Friends - Target (Galaxy= " + str(galaxy) + ", System= " + str(solarsystem) + ") \n\n"
         sorted_friend_keys = sorted(friends)
         for key in sorted_friend_keys:
             friend = friends[key]
@@ -386,9 +387,10 @@ class Moon(interactions.Extension):
                     player_name = player_name[0][0]
                 except:
                     player_name = str(friend["playerId"]) + " (Keinen Namen gefunden)"
-            report = report + "Sys: " + str(friend["system"]) + " Pos: " + str(friend["position"]) + "\t Spieler: **" + str(player_name) + "** - Phalanx: \t **" + str(friend["phalanx"]) + "**\n"
+            report = report + "Sys: " + str(friend["system"]) + " Pos: " + str(friend["position"]) + " Phalanx: " + str(friend["phalanx"]) + " \t Spieler: " + str(player_name) + "\n"
+        result.append(report)
 
-        report = report + "\n" + "**Enemies** \n"
+        report = "Enemies - Target (Galaxy= " + str(galaxy) + ", System= " + str(solarsystem) + ") \n\n"
         sorted_enemy_keys = sorted(enemies)
         for key in sorted_enemy_keys:
             enemy = enemies[key]
@@ -398,8 +400,9 @@ class Moon(interactions.Extension):
                     player_name = player_name[0][0]
                 except:
                     player_name = str(enemy["playerId"]) + " (Keinen Namen gefunden)"
-            report = report + "Sys: " + str(enemy["system"]) + " Pos: " + str(enemy["position"]) + "\t Spieler: **" + str(player_name) + "** - Phalanx: \t **" + str(enemy["phalanx"]) + "**\n"
-        return report
+            report = report + "Sys: " + str(enemy["system"]) + " Pos: " + str(enemy["position"]) + " Phalanx: " + str(enemy["phalanx"]) + " \t Spieler: " + str(player_name) + "\n"
+        result.append(report)
+        return result
 
     @interactions.extension_command(name="moons_in_range",
                                     description="Zeigt alle Monde an die das Zielsystem phalanxen koennen.",
@@ -408,9 +411,9 @@ class Moon(interactions.Extension):
         await ctx.defer()
 
         if(AuthHandler.instance().check(ctx)):
-            result = "**Target (Galaxy= " + str(galaxy) + ", System= " + str(solarsystem) + ")**"
-            result = result + Moon.create_phalanxed_moon_table(self, galaxy, solarsystem)
-            await ctx.send(str(result))
+            
+            for result in Moon.create_phalanxed_moon_table(self, galaxy, solarsystem):
+                await ctx.send("```python\n" + str(result) + "```")
         else:
             await ctx.send("Keine Rechte diesen Befehl zu nutzen")
 
