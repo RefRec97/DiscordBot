@@ -109,6 +109,7 @@ class Stats(interactions.Extension):
             interval_end = datetime.datetime.strptime(interval_end, "%d/%m/%Y")
             interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
         elif(type(interval_end) == datetime.datetime):
+            interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
             pass
         else:
             await ctx.send("Enddatum falsches Format")
