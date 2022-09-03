@@ -4,6 +4,7 @@ from bot_utils.db import DataBase
 import options.moon_options as moon_options
 import interactions
 from bot_utils.authHandler import AuthHandler
+import datetime
 
 
 class Moon(interactions.Extension):
@@ -253,12 +254,14 @@ class Moon(interactions.Extension):
     def create_map(self, galaxy: int, start_system: int, end_system: int):
             result = Moon.get_moons(self, galaxy)
             entries = {}
+            
             for moon in result:
+                alliance_name = Moon.get_alliance_by_player(self, moon[3])
                 moon_entry = {"phalanx": int(moon[0]), "system": int(moon[1]), "position": moon[2], "playerId": moon[3],
-                            "allianceId": Moon.get_alliance_by_player(self, moon[3]),
-                            "is_friend": Moon.is_friend(self, Moon.get_alliance_by_player(self, moon[3]))}
+                            "allianceId": alliance_name ,
+                            "is_friend": Moon.is_friend(self, alliance_name )}
                 entries[len(entries) + 1] = moon_entry
-
+            
             chartData = Moon.initializeDataDict(self)
             friends = chartData["friends"]
             enemies = chartData["enemies"]
@@ -275,13 +278,13 @@ class Moon(interactions.Extension):
                         friends[system - 1] = 1
                     else:
                         enemies[system - 1] = -1
-
             friends = [0 if v is None else v for v in friends]
             enemies = [0 if v is None else v for v in enemies]
             chartData["systems"] = chartData["systems"][start_system:end_system]
             chartData["friends"] = friends[start_system:end_system]
             chartData["enemies"] = enemies[start_system:end_system]
             chartData["moons"] = moons[start_system:end_system]
+            
             return str(Moon.get_chart_url(self, chartData, 'xl'))
 
     @interactions.extension_command(name="moon_phalanx_map",
