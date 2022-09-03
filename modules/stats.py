@@ -348,7 +348,7 @@ class Stats(interactions.Extension):
 
     def _getStatsString(self, username):
         
-        if not self._db.check_player:
+        if not self._db.check_player(username):
             return "Nutzer nicht gefunden"
         
         userData = self._db.get_player_stats(username)
