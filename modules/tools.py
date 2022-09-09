@@ -1,12 +1,15 @@
 import re
 import interactions
 from interactions.ext.get import get
+from bot_utils.authHandler import AuthHandler
+from bot_utils.db import DataBase
 
 from bot_utils.authHandler import AuthHandler
 
 class Tools(interactions.Extension):
     def __init__(self, bot: interactions.Client):
         self.bot: interactions.Client = bot
+        self._db = DataBase()
 
     @interactions.extension_command(name="link",
         description="Erzeugt ein Link der die Position <g>:<s> in der Galaxyansicht führt",
@@ -32,6 +35,35 @@ class Tools(interactions.Extension):
         await ctx.send(f'https://pr0game.com/game.php?page=galaxy&galaxy={galaxy}&system={system}')
         #else:
         #    await ctx.send('not authorized')
+
+    @interactions.extension_command(name="playerlink",
+        description="Erzeugt Links auf die Positionen eines Spielers in der Galaxyansicht führt",
+        options=[
+            interactions.Option(
+                name="username",
+                description="name des Spielers",
+                type=interactions.OptionType.STRING,
+                required=True,
+            ),
+        ],
+    )
+    async def playerlink(self, ctx: interactions.CommandContext, username: str):
+        username = username.lower()
+        ctx.defer()
+        if(AuthHandler.instance().check(ctx) == False):
+            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        if not self._db.check_player(username):
+            await ctx.send("Nutzer nicht gefunden")
+            return
+        planets = self._db.get_playerplanets_raw(username)
+        result = ""
+        for planet in planets:
+            result +=(f'https://pr0game.com/game.php?page=galaxy&galaxy={planet["galaxy"]}&system={planet["system"]}')
+            result += "\n"
+        await ctx.send(result)
+        return
+        
 
 
     @interactions.extension_command(

@@ -196,6 +196,21 @@ class DataBase:
         cursor.close()
         self.teardown()
         return result
+    def get_playerplanets_raw(self, player):
+        self.setup()
+        cursor = self.mydb.cursor()
+        cursor.execute('select planets.galaxy, planets.solarsystem, planets.position from planets '+
+            'inner join players on players.playerId = planets.playerId '+
+            'where players.name = %s order by galaxy asc, solarsystem asc, position asc;', (player,))
+        data = cursor.fetchall()
+        result = []
+        for row in data:
+            dict = {"galaxy": row[0], "system": row[1], "position": row[2]}
+            result.append(dict)
+        
+        cursor.close()
+        self.teardown()
+        return result
 
     def get_playerplanets(self, player):
         self.setup()
