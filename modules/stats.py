@@ -37,12 +37,19 @@ class Stats(interactions.Extension):
         ],
     )
     async def stats(self, ctx: interactions.CommandContext, *,username):
-        username = username.lower()
-        await ctx.defer()
-        if(AuthHandler.instance().check(ctx)):
-            await ctx.send(self._getStatsString(username))
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        try:
+            username = username.lower()
+            await ctx.defer()
+            if(AuthHandler.instance().check(ctx)):
+                await ctx.send(self._getStatsString(username))
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+
+        return
 
     @interactions.extension_command(
         name="history",
@@ -57,12 +64,19 @@ class Stats(interactions.Extension):
         ],
     )
     async def history(self, ctx: interactions.CommandContext, *,username):
-        username = username.lower()
-        await ctx.defer()
-        if(AuthHandler.instance().check(ctx)):
-            await ctx.send(self._getHistoryString(username))
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        try:
+            username = username.lower()
+            await ctx.defer()
+            if(AuthHandler.instance().check(ctx)):
+                await ctx.send(self._getHistoryString(username))
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
         
 
     @interactions.extension_command(
@@ -101,28 +115,35 @@ class Stats(interactions.Extension):
             ),
         ],
     )
-    async def chart(self, ctx: interactions.CommandContext, *,username, interval_length=8, interval_end= datetime.datetime.today(), size="m"):        
-        if not self._db.check_player(username):
-            return "Nutzer nicht gefunden"
-        await ctx.defer()
-        if(type(interval_end) == str):
-            interval_end = datetime.datetime.strptime(interval_end, "%d/%m/%Y")
-            interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
-        elif(type(interval_end) == datetime.datetime):
-            interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
-            pass
-        else:
-            await ctx.send("Enddatum falsches Format")
+    async def chart(self, ctx: interactions.CommandContext, *,username, interval_length=8, interval_end= datetime.datetime.today(), size="m"):
+        try:
+            if not self._db.check_player(username):
+                return "Nutzer nicht gefunden"
+            await ctx.defer()
+            if(type(interval_end) == str):
+                interval_end = datetime.datetime.strptime(interval_end, "%d/%m/%Y")
+                interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
+            elif(type(interval_end) == datetime.datetime):
+                interval_end = interval_end + datetime.timedelta(hours=23, minutes=59, seconds=59)
+                pass
+            else:
+                await ctx.send("Enddatum falsches Format")
+                return
+            start_date = interval_end - datetime.timedelta(weeks = interval_length)
+            if(AuthHandler.instance().check(ctx)):
+                data = self._db.get_player_chart_history(username, start_date, interval_end)
+                chartData = self._playerData.build_chart_dict(data)
+                url = self._getChartURL(chartData, size)
+                returnMsg = "```%s```%s" % (username, url)
+                await ctx.send(returnMsg)
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
             return
-        start_date = interval_end - datetime.timedelta(weeks = interval_length)
-        if(AuthHandler.instance().check(ctx)):
-            data = self._db.get_player_chart_history(username, start_date, interval_end)
-            chartData = self._playerData.build_chart_dict(data)
-            url = self._getChartURL(chartData, size)
-            returnMsg = "```%s```%s" % (username, url)
-            await ctx.send(returnMsg)
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
 
     #@commands.command(usage="<galaxy>",
     #                  brief="Zeigt potentiell Inaktive Spieler an",

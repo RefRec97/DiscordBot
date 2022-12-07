@@ -43,22 +43,27 @@ class Planet(interactions.Extension):
         ],
     )
     async def planet_add(self, ctx: interactions.CommandContext, *, username, galaxy:int, system:int, position:int):
-        if not self._db.check_player(username):
-            await ctx.send('Spieler nicht gefunden')
-            return
-        await ctx.defer()
-        id = self._db.get_id(username)
-        if self._db.check_planets(galaxy, system, position):
-            await ctx.send('Planet bereits gespeichert')
-            return
-        else:
-            if(AuthHandler.instance().check(ctx)):
-                self._db.add_planet(galaxy, system, position, id)
-                await ctx.send('Planet gespeichert')
+        try:
+            if not self._db.check_player(username):
+                await ctx.send('Spieler nicht gefunden')
+                return
+            await ctx.defer()
+            id = self._db.get_id(username)
+            if self._db.check_planets(galaxy, system, position):
+                await ctx.send('Planet bereits gespeichert')
+                return
             else:
-                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
-            
-            #todo check for failure
+                if(AuthHandler.instance().check(ctx)):
+                    self._db.add_planet(galaxy, system, position, id)
+                    await ctx.send('Planet gespeichert')
+                else:
+                    await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
 
     @interactions.extension_command(
         name="planet_delete",
@@ -79,31 +84,35 @@ class Planet(interactions.Extension):
         ],
     )
     async def planet_delete(self, ctx: interactions.CommandContext, *, username, position):
-        
-        if not self._db.check_player(username):
-            await ctx.send('Spieler nicht gefunden')
-            return
         try:
-            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            galaxy = result.group(1)
-            system = result.group(2)
-            location = result.group(3)
-        except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delPlanet 1:1:1,Sc0t')
-            return
-        await ctx.defer()
-        id = self._db.get_id(username)
-        if not self._db.check_planets(galaxy, system, location):
-            await ctx.send('Planet nicht vorhanden')
-            return
-        else:
-            if(AuthHandler.instance().check(ctx)):
-                self._db.del_planet(galaxy, system, location)
-                await ctx.send('Planet gelöscht')
+            if not self._db.check_player(username):
+                await ctx.send('Spieler nicht gefunden')
+                return
+            try:
+                result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
+                galaxy = result.group(1)
+                system = result.group(2)
+                location = result.group(3)
+            except:
+                await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delPlanet 1:1:1,Sc0t')
+                return
+            await ctx.defer()
+            id = self._db.get_id(username)
+            if not self._db.check_planets(galaxy, system, location):
+                await ctx.send('Planet nicht vorhanden')
+                return
             else:
-                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
-            
-            #todo: check for failure
+                if(AuthHandler.instance().check(ctx)):
+                    self._db.del_planet(galaxy, system, location)
+                    await ctx.send('Planet gelöscht')
+                else:
+                    await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
 
     @interactions.extension_command(
         name="moon_add",
@@ -160,28 +169,33 @@ class Planet(interactions.Extension):
         ],
     )
     async def moon_add(self, ctx: interactions.CommandContext, *, username, galaxy, system, position, phalanx=0, basis=0, robo=0, sprungtor=0):
-        if(AuthHandler.instance().check(ctx)):
-            if not self._db.check_player(username):
-                await ctx.send('Spieler nicht gefunden')
-                return
-            await ctx.defer()
-            id = self._db.get_id(username)
-            status = ''
-            if not self._db.check_planets(galaxy, system, position):
-                self._db.add_planet(galaxy, system, position, id)
-                status = 'Planet gespeichert\n'
-            
-            if self._db.check_moon(galaxy, system, position):
-                await ctx.send('Mond bereits gespeichert')
-                return
+        try:
+            if(AuthHandler.instance().check(ctx)):
+                if not self._db.check_player(username):
+                    await ctx.send('Spieler nicht gefunden')
+                    return
+                await ctx.defer()
+                id = self._db.get_id(username)
+                status = ''
+                if not self._db.check_planets(galaxy, system, position):
+                    self._db.add_planet(galaxy, system, position, id)
+                    status = 'Planet gespeichert\n'
+                
+                if self._db.check_moon(galaxy, system, position):
+                    await ctx.send('Mond bereits gespeichert')
+                    return
+                else:
+                    self._db.add_moon(galaxy, system, position, id, phalanx, basis, robo, sprungtor)
+                    status = status + 'Mond gespeichert'
+                    await ctx.send(status)
             else:
-                self._db.add_moon(galaxy, system, position, id, phalanx, basis, robo, sprungtor)
-                status = status + 'Mond gespeichert'
-                await ctx.send(status)
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
-            
-            #todo: check for failure
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
     
     @interactions.extension_command(
         name="moon_update",
@@ -220,27 +234,31 @@ class Planet(interactions.Extension):
         ],
     )
     async def moon_update(self, ctx: interactions.CommandContext, *, position, phalanx, basis, robo, sprungtor):
-
         try:
-            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            galaxy = result.group(1)
-            system = result.group(2)
-            location = result.group(3)
-        except:
-            await ctx.send('Position konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
-            return
-        await ctx.defer()
-        if not self._db.check_moon(galaxy, system, location):
-            await ctx.send('Kein Mond vorhanden')
-            return
-        else:
-            if(AuthHandler.instance().check(ctx)):
-                self._db.update_moon(galaxy, system, location, phalanx, basis, robo, sprungtor)
-                await ctx.send('Mond gespeichert')
+            try:
+                result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
+                galaxy = result.group(1)
+                system = result.group(2)
+                location = result.group(3)
+            except:
+                await ctx.send('Position konnte nicht geparst werden\nz.B.: !addMoon 1:1:1,Name')
+                return
+            await ctx.defer()
+            if not self._db.check_moon(galaxy, system, location):
+                await ctx.send('Kein Mond vorhanden')
+                return
             else:
-                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
-            
-            #todo: check for failure
+                if(AuthHandler.instance().check(ctx)):
+                    self._db.update_moon(galaxy, system, location, phalanx, basis, robo, sprungtor)
+                    await ctx.send('Mond gespeichert')
+                else:
+                    await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
 
     @interactions.extension_command(
         name="moone_delete",
@@ -261,32 +279,38 @@ class Planet(interactions.Extension):
         ],
     )
     async def moon_delete(self, ctx: interactions.CommandContext, *, username, position):
-
         try:
-            result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
-            galaxy = result.group(1)
-            system = result.group(2)
-            location = result.group(3)
-        except:
-            await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delMoon 1:1:1,Name')
-            return
-        if not self._db.check_player(username):
-            await ctx.send('Spieler nicht gefunden')
-            return
-        await ctx.defer()
-        id = self._db.get_id(username)
-        if not self._db.check_planets(galaxy, system, location):
-            await ctx.send('Kein Planet auf der Position')
-            return
-        elif not self._db.check_moon(galaxy, system, location):
-            await ctx.send('Mond bereits gelöscht')
-            return
-        else:
-            if(AuthHandler.instance().check(ctx)):
-                self._db.del_moon(galaxy, system, location)
-                await ctx.send('Mond gelöscht')
+            try:
+                result = re.search("^(\d):(\d{1,3}):(\d{1,3})$",position)
+                galaxy = result.group(1)
+                system = result.group(2)
+                location = result.group(3)
+            except:
+                await ctx.send('Poisiton konnte nicht geparst werden\nz.B.: !delMoon 1:1:1,Name')
+                return
+            if not self._db.check_player(username):
+                await ctx.send('Spieler nicht gefunden')
+                return
+            await ctx.defer()
+            id = self._db.get_id(username)
+            if not self._db.check_planets(galaxy, system, location):
+                await ctx.send('Kein Planet auf der Position')
+                return
+            elif not self._db.check_moon(galaxy, system, location):
+                await ctx.send('Mond bereits gelöscht')
+                return
             else:
-                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+                if(AuthHandler.instance().check(ctx)):
+                    self._db.del_moon(galaxy, system, location)
+                    await ctx.send('Mond gelöscht')
+                else:
+                    await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
             
 def setup(bot: interactions.Client):
     Planet(bot)

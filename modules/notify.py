@@ -26,18 +26,25 @@ class Notify(interactions.Extension):
         ],
     )
     async def add_update(self, ctx: interactions.CommandContext, channel_id: int):
-        if self._db.check_updatechannel(channel_id):
-            returnMsg = "Channel bereits vorhanden"
+        try:
+            if self._db.check_updatechannel(channel_id):
+                returnMsg = "Channel bereits vorhanden"
+                await ctx.send(returnMsg)
+                return
+
+            self._db.add_updatechannel(channel_id)
+            if self._db.check_updatechannel(channel_id):
+                returnMsg = "Channel hinzugefügt"
+            else:
+                returnMsg = "Fehler beim Channel hinzufügen"
+            
             await ctx.send(returnMsg)
             return
-
-        self._db.add_updatechannel(channel_id)
-        if self._db.check_updatechannel(channel_id):
-            returnMsg = "Channel hinzugefügt"
-        else:
-            returnMsg = "Fehler beim Channel hinzufügen"
-        
-        await ctx.send(returnMsg)
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
     
     #@addUpdate.error
     async def addUpdate_error(self, ctx, error):

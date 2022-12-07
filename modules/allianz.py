@@ -27,15 +27,22 @@ class Allianz(interactions.Extension):
     )
     async def allianz(self, ctx: interactions.CommandContext, *,allianz_name):
         """Zeigt die Top 10 Spieler der Allianz <allianzname> an"""
-        allianz_name = allianz_name.lower()
+        try:
+            allianz_name = allianz_name.lower()
 
-        if not self._db.check_ally(allianz_name):
-            await ctx.send('Allianzname nicht gefunden')
+            if not self._db.check_ally(allianz_name):
+                await ctx.send('Allianzname nicht gefunden')
+                return
+            if(AuthHandler.instance().check(ctx)):
+                await ctx.send(self._getAllianzString(allianz_name))
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
             return
-        if(AuthHandler.instance().check(ctx)):
-            await ctx.send(self._getAllianzString(allianz_name))
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
         
 
     @interactions.extension_command(
@@ -67,19 +74,26 @@ class Allianz(interactions.Extension):
         ],
     )
     async def allianz_position(self, ctx: interactions.CommandContext, *,allianz_name, galaxy, sorting:str = "system"):
-        sort_bool = False
-        if sorting == "player":
-            sort_bool = True
+        try:
+            sort_bool = False
+            if sorting == "player":
+                sort_bool = True
 
-        if not self._db.check_ally(allianz_name):
-            await ctx.send('Allianzname nicht gefunden')
+            if not self._db.check_ally(allianz_name):
+                await ctx.send('Allianzname nicht gefunden')
+                return
+            if(AuthHandler.instance().check(ctx)):
+                result = self._getAllianzPosString(allianz_name, galaxy, sort_bool)
+                for result_print in result:
+                    await ctx.send("```python\n" + result_print + "```")
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
             return
-        if(AuthHandler.instance().check(ctx)):
-            result = self._getAllianzPosString(allianz_name, galaxy, sort_bool)
-            for result_print in result:
-                await ctx.send("```python\n" + result_print + "```")
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
         
 
     #@allianz.error

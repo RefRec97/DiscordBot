@@ -29,14 +29,21 @@ class Authentication(interactions.Extension):
     )
     async def auth(self, ctx: interactions.CommandContext, *,username, gruppe):
         #todo: add update logic
-        if(AuthHandler.instance().check(ctx)):
-            if self._auth.add(username, gruppe):
-                returnMsg = "Erfolgreich Authorisiert"
+        try:
+            if(AuthHandler.instance().check(ctx)):
+                if self._auth.add(username, gruppe):
+                    returnMsg = "Erfolgreich Authorisiert"
+                else:
+                    returnMsg = "Authorisiorung fehlgeschlagen"
+                await ctx.send(returnMsg)
             else:
-                returnMsg = "Authorisiorung fehlgeschlagen"
-            await ctx.send(returnMsg)
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
         
 
     @interactions.extension_command(
@@ -58,14 +65,21 @@ class Authentication(interactions.Extension):
         ],
     )
     async def deauth(self, ctx: interactions.CommandContext, *,username, gruppe):
-        if(AuthHandler.instance().check(ctx)):
-            if self._auth.remove(username, gruppe):
-                returnMsg = "Erfolgreich Deauthorisiert"
+        try:
+            if(AuthHandler.instance().check(ctx)):
+                if self._auth.remove(username, gruppe):
+                    returnMsg = "Erfolgreich Deauthorisiert"
+                else:
+                    returnMsg = "Authorisiorung fehlgeschlagen"
+                await ctx.send(returnMsg)
             else:
-                returnMsg = "Authorisiorung fehlgeschlagen"
-            await ctx.send(returnMsg)
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
 
     @interactions.extension_command(
         name="ban",
@@ -80,15 +94,22 @@ class Authentication(interactions.Extension):
         ],
     )
     async def ban(self, ctx: interactions.CommandContext, *,username):
-        username = username.lower()
-        if(AuthHandler.instance().check(ctx)):
-            if self._auth.remove(username):
-                returnMsg = "Bonk!"
+        try:
+            username = username.lower()
+            if(AuthHandler.instance().check(ctx)):
+                if self._auth.remove(username):
+                    returnMsg = "Bonk!"
+                else:
+                    returnMsg = "Bonk hammer kaputt"
+                await ctx.send(returnMsg)
             else:
-                returnMsg = "Bonk hammer kaputt"
-            await ctx.send(returnMsg)
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
         
 
     #@auth.error

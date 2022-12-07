@@ -291,15 +291,22 @@ class Moon(interactions.Extension):
                                     description="Zeigt die Phalanxgebiete in einem angegebenen Bereich an",
                                     options=moon_options.phalanx_map_options)
     async def moon_phalanx_map(self, ctx: interactions.CommandContext, *, galaxy: int, start_system: int, end_system: int):
-        await ctx.defer()
-        if(AuthHandler.instance().check(ctx)):
-            if end_system - start_system > 200:
-                await ctx.defer()
-                await ctx.send("Maximal 200 Systeme als Bereich")
-                return
-            await ctx.send(Moon.create_map(self, galaxy, start_system, end_system))
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        try:
+            await ctx.defer()
+            if(AuthHandler.instance().check(ctx)):
+                if end_system - start_system > 200:
+                    await ctx.defer()
+                    await ctx.send("Maximal 200 Systeme als Bereich")
+                    return
+                await ctx.send(Moon.create_map(self, galaxy, start_system, end_system))
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
         
     def create_moon_data(self, galaxy:int, solarsystem: int, position: int):
         db_result = Moon.get_moon(self, galaxy, solarsystem, position)
@@ -328,12 +335,19 @@ class Moon(interactions.Extension):
                                     description="Zeigt die Ausbaustufen eines Mondes an. Aufrufbar ueber seine Position",
                                     options=moon_options.moon_data_options)
     async def moon_data(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int, position: int):
-        await ctx.defer()
-        if(AuthHandler.instance().check(ctx)):
-            result = Moon.create_moon_data(self, galaxy, solarsystem, position)
-            await ctx.send(str(result))
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        try:
+            await ctx.defer()
+            if(AuthHandler.instance().check(ctx)):
+                result = Moon.create_moon_data(self, galaxy, solarsystem, position)
+                await ctx.send(str(result))
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
     
     def read_phalanxed_moon_data(self, galaxy):
         moons_enemies = []
@@ -411,14 +425,20 @@ class Moon(interactions.Extension):
                                     description="Zeigt alle Monde an die das Zielsystem phalanxen koennen.",
                                     options=moon_options.moons_in_range_options)
     async def moons_in_range(self, ctx: interactions.CommandContext, *, galaxy: int, solarsystem: int):
-        await ctx.defer()
-
-        if(AuthHandler.instance().check(ctx)):
-            
-            for result in Moon.create_phalanxed_moon_table(self, galaxy, solarsystem):
-                await ctx.send("```python\n" + str(result) + "```")
-        else:
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        try:
+            await ctx.defer()
+            if(AuthHandler.instance().check(ctx)):
+                
+                for result in Moon.create_phalanxed_moon_table(self, galaxy, solarsystem):
+                    await ctx.send("```python\n" + str(result) + "```")
+            else:
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+            return
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
+            return
 
 def setup(bot: interactions.Client):
     Moon(bot)

@@ -23,8 +23,8 @@ class Tools(interactions.Extension):
         ],
     )
     async def link(self, ctx: interactions.CommandContext, position: str):
-        position = position.lower()
         try:
+            position = position.lower()
             result = re.search("^(\d):(\d{1,3})$", position)
             galaxy = result.group(1)
             system = result.group(2)
@@ -48,19 +48,25 @@ class Tools(interactions.Extension):
         ],
     )
     async def playerlink(self, ctx: interactions.CommandContext, username: str):
-        username = username.lower()
-        ctx.defer()
-        if(AuthHandler.instance().check(ctx) == False):
-            await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+        try:
+            username = username.lower()
+            ctx.defer()
+            if(AuthHandler.instance().check(ctx) == False):
+                await ctx.send("Keine Rechte diesen Befehl zu nutzen")
+                return
+            if not self._db.check_player(username):
+                await ctx.send("Nutzer nicht gefunden")
+                return
+            planets = self._db.get_playerplanets_raw(username)
+            result = ""
+            for planet in planets:
+                result +=(f'https://pr0game.com/game.php?page=galaxy&galaxy={planet["galaxy"]}&system={planet["system"]}')
+                result += "\n"
+        except Exception as e:
+            template = "Fehler aufgetreten, bitte Reflexrecon melden: {0} . Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            await ctx.send(message)
             return
-        if not self._db.check_player(username):
-            await ctx.send("Nutzer nicht gefunden")
-            return
-        planets = self._db.get_playerplanets_raw(username)
-        result = ""
-        for planet in planets:
-            result +=(f'https://pr0game.com/game.php?page=galaxy&galaxy={planet["galaxy"]}&system={planet["system"]}')
-            result += "\n"
         await ctx.send(result)
         return
         
