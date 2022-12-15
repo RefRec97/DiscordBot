@@ -10,8 +10,12 @@ class AuthHandler:
         self._adminrights = ['admin']
         self._modrights = ['admin', 'mod']
         self._userrights = ['admin', 'mod', 'user']
+        self._openrights = ['admin', 'mod', 'user', 'open']
         self._admincommands = []
         self._modcommands = ['auth', 'addUpdate', 'deauth', 'ban']
+        self._usercommands = [
+            'stats', 'allianz_position', 'moon_data', 'moon_add', 'moon_delete', 'moon_update', 'moon_phalanx_update', 
+            'moons_in_range', 'planet_add', 'planet_delete', 'playerlink']
 
     #def addBot(self, bot: commands.bot):
     #    self._bot = bot
@@ -26,8 +30,13 @@ class AuthHandler:
         if command in self._modcommands:
             if role in self._modrights:
                 return True
-        else:
+        elif command in self._usercommands:
             if role in self._userrights:
+                return True
+            else:
+                return False
+        else:
+            if role in self._openrights:
                 return True
             else:
                 return False
