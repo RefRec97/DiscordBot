@@ -425,7 +425,7 @@ class Stats(interactions.Extension):
         playerId = self._db.get_player_id_by_name(player_name)
         self._db.setup()
         cursor = self._db.mydb.cursor(buffered=True)
-        generalQuery = "SELECT generalScore FROM data.data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
+        generalQuery = "SELECT generalScore FROM data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
         cursor.execute(generalQuery)
         value = cursor.fetchall()
         cursor.close()
@@ -438,7 +438,7 @@ class Stats(interactions.Extension):
         playerId = self._db.get_player_id_by_name(player_name)
         self._db.setup()
         cursor = self._db.mydb.cursor()
-        fleetQuery = "SELECT fleetScore FROM data.data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
+        fleetQuery = "SELECT fleetScore FROM data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
         cursor.execute(fleetQuery)
         value = cursor.fetchall()
         cursor.close()
@@ -450,7 +450,7 @@ class Stats(interactions.Extension):
         playerId = self._db.get_player_id_by_name(player_name)
         self._db.setup()
         cursor = self._db.mydb.cursor()
-        researchQuery = "SELECT researchScore FROM data.data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
+        researchQuery = "SELECT researchScore FROM data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
         cursor.execute(researchQuery)
         value = cursor.fetchall()
         cursor.close()
@@ -462,7 +462,7 @@ class Stats(interactions.Extension):
         playerId = self._db.get_player_id_by_name(player_name)
         self._db.setup()
         cursor = self._db.mydb.cursor()
-        buildingQuery = "SELECT buildingScore FROM data.data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
+        buildingQuery = "SELECT buildingScore FROM data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
         cursor.execute(buildingQuery)
         value = cursor.fetchall()
         cursor.close()
@@ -474,7 +474,7 @@ class Stats(interactions.Extension):
         playerId = self._db.get_player_id_by_name(player_name)
         self._db.setup()
         cursor = self._db.mydb.cursor()
-        defensiveQuery = "SELECT defensiveScore FROM data.data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
+        defensiveQuery = "SELECT defensiveScore FROM data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
         cursor.execute(defensiveQuery)
         value = cursor.fetchall()
         cursor.close()
@@ -486,7 +486,7 @@ class Stats(interactions.Extension):
         playerId = self._db.get_player_id_by_name(player_name)
         self._db.setup()
         cursor = self._db.mydb.cursor()
-        dateQuery = "SELECT data.date FROM data.data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
+        dateQuery = "SELECT data.date FROM data WHERE playerId = " + str(playerId) + " order by date DESC LIMIT 30;"
         cursor.execute(dateQuery)
         value = cursor.fetchall()
         cursor.close()
