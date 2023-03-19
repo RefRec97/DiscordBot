@@ -114,7 +114,7 @@ class Tools(interactions.Extension):
 
         channel = await get(self.bot, interactions.Channel, channel_id=987732014692171827)
 
-        returnStr = "```{},{},{},{}```".format(server, user, command, args)
+        returnStr = "```{},{},{},{}```".format(server.name, user, command, args)
         await channel.send(returnStr)
 
 def setup(bot: interactions.Client):
