@@ -113,8 +113,13 @@ class Tools(interactions.Extension):
                 args.append(option.value)
 
         channel = await get(self.bot, interactions.Channel, channel_id=987732014692171827)
-
-        returnStr = "```{},{},{},{}```".format(server.name, user, command, args)
+        origin = ""
+        if server == "private":
+            origin = server
+        else:
+            origin = server.name
+        
+        returnStr = "```{},{},{},{}```".format(origin, user, command, args)
         await channel.send(returnStr)
 
 def setup(bot: interactions.Client):
